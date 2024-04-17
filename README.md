@@ -1,1 +1,1 @@
-# bayesian_lmm
+# Bayesian LMMs for EEG analysis
