@@ -50,3 +50,6 @@ rsconnect/
 
 # OS files
 .DS_Store
+
+# Output
+output/
