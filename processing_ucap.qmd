@@ -30,7 +30,7 @@ Install package "hu-neuro-pipeline"
 py_install("hu-neuro-pipeline", pip = TRUE)
 ```
 
-## Preprocessing UCAP data
+## Processing UCAP data
 
 ### Loading packages
 
@@ -85,5 +85,13 @@ str(res, max.level = 1)
 ```{r}
 trials <- res[[1]]
 head(trials)
+```
+```{r}
+trials |>
+  ggplot(aes(x = N2, fill = n_b)) +
+  geom_density(color = NA, alpha = 0.5) +
+  labs(x = "N2 amplitude (µV)", y = "Density", fill = "Condition") +
+  theme_minimal(base_size = 25.0) +
+  theme(legend.position = "top")
 ```
 
