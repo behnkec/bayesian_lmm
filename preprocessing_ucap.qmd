@@ -1,0 +1,89 @@
+---
+title: "Preprocessing UCAP"
+format: html
+editor: visual
+execute:
+  warning: false
+  error: false
+---
+
+## Installation
+
+Install reticulate
+
+```{r}
+#install.packages("reticulate")
+library("reticulate")
+```
+
+Check if conda distribution exists (and install if necessary)
+
+```{r}
+conda_exe()
+
+#install_miniconda()
+```
+
+Install package "hu-neuro-pipeline"
+
+```{r}
+py_install("hu-neuro-pipeline", pip = TRUE)
+```
+
+## Preprocessing UCAP data
+
+### Loading packages
+
+```{r}
+library("reticulate")
+library("Rmisc")
+library("dplyr")
+library("ggplot2")
+library("lme4")
+```
+
+### Loading the pipeline & downloading UCAP data
+
+```{r}
+pipeline <- import("pipeline")
+ucap_files <- pipeline$datasets$get_ucap()
+print(ucap_files)
+```
+
+### Running the pipeline
+
+```{r}
+res <- pipeline$group_pipeline(
+
+  # Input/output paths
+  raw_files = ucap_files$raw_files,
+  log_files = ucap_files$log_files,
+  output_dir = "output",
+
+  # Preprocessing options
+  downsample_sfreq = 250.0,
+  besa_files = ucap_files$besa_files,
+
+  # Epoching options
+  triggers = c(201:208, 211:218),
+  components = list(
+    "name" = list("N2", "P3b"),
+    "tmin" = list(0.25, 0.4),
+    "tmax" = list(0.35, 0.55),
+    "roi" = list(
+      c("FC1", "FC2", "C1", "C2", "Cz"),
+      c("CP3", "CP1", "CPz", "CP2", "CP4", "P3", "Pz", "P4", "PO3", "POz", "PO4")
+    )
+  ),
+)
+```
+### Checking results
+
+```{r}
+str(res, max.level = 1)
+```
+```{r}
+trials <- res[[1]]
+head(trials)
+```
+
