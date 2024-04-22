@@ -34,4 +34,3 @@ summary(mod)
 mod2 <- lmerTest::lmer(N2 ~ 1 + n_b + (1 + n_b | participant_id), trials)
 summary(mod)
 ```
-
