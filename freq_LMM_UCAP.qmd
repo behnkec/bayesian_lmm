@@ -1,0 +1,37 @@
+---
+title: "Frequentist Linear Mixed Modell for the UCAP data set"
+format: html
+editor: visual
+---
+
+## Load packages and dataset
+
+```{r}
+library("Rmisc")
+library("dplyr")
+library("ggplot2")
+library("lme4")
+library("readr")
+```
+
+```{r}
+trials <- read_csv("output/trials.csv")
+head(trials)
+```
+
+## Fitting LMM
+
+### with lme4
+
+```{r}
+mod <- lme4::lmer(N2 ~ 1 + n_b + (1|participant_id), trials)
+summary(mod)
+```
+
+### p-values using lmerTest
+
+```{r}
+mod2 <- lmerTest::lmer(N2 ~ 1 + n_b + (1 + n_b | participant_id), trials)
+summary(mod)
+```
+
