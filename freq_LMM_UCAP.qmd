@@ -24,7 +24,7 @@ head(trials)
 ### with lme4
 
 ```{r}
-mod <- lme4::lmer(N2 ~ 1 + n_b + (1 + n_b |participant_id), trials)
+mod <- lme4::lmer(N2 ~ 1 + n_b + (1 |participant_id), trials)
 summary(mod)
 ```
 
