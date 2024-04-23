@@ -77,15 +77,18 @@ res <- pipeline$group_pipeline(
   ),
 )
 ```
+
 ### Checking results
 
 ```{r}
 str(res, max.level = 1)
 ```
+
 ```{r}
 trials <- res[[1]]
 head(trials)
 ```
+
 ```{r}
 trials |>
   ggplot(aes(x = N2, fill = n_b)) +
@@ -94,4 +97,3 @@ trials |>
   theme_minimal(base_size = 25.0) +
   theme(legend.position = "top")
 ```
-
