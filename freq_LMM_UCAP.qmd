@@ -38,6 +38,6 @@ summary(mod)
 ### mit random Items
 
 ```{r}
-mod <- lmerTest::lmer(N2 ~ 1 + n_b + (1 + n_b |participant_id) + (1 + n_b | Objektpaar), trials)
+mod3 <- lmerTest::lmer(N2 ~ 1 + n_b + (1 + n_b |participant_id) + (1 + n_b | Objektpaar), trials)
 summary(mod)
 ```

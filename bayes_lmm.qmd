@@ -1,0 +1,30 @@
+---
+title: "Bayesian Linear Mixed Modell for the UCAP data set"
+format: html
+editor: visual
+---
+
+## Load packages and data set
+
+```{r}
+library(brms)
+library("readr")
+```
+
+```{r}
+trials <- read_csv("output/trials.csv")
+head(trials)
+```
+
+## Bayesian LMM with brms
+
+```{r}
+mod <- brm(N2 ~ 1 + n_b + (1 |participant_id),
+           data = trials)
+```
+
+```{r}
+summary(mod)
+plot(mod, variable = c("b_n_bnormal"))
+```
+
