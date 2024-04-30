@@ -53,3 +53,9 @@ rsconnect/
 
 # Output
 output/
+
+# No folders
+/*/
+
+# HTML files
+*.html

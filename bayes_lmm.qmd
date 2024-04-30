@@ -19,7 +19,7 @@ head(trials)
 ## Bayesian LMM with brms
 
 ```{r}
-mod <- brm(N2 ~ 1 + n_b + (1 |participant_id),
+mod <- brm(N2 ~ 1 + n_b + (1 + n_b |participant_id),
            data = trials)
 ```
 
@@ -27,4 +27,9 @@ mod <- brm(N2 ~ 1 + n_b + (1 |participant_id),
 summary(mod)
 plot(mod, variable = c("b_n_bnormal"))
 ```
+```{r}
+mod$prior
+```
+
+
 
