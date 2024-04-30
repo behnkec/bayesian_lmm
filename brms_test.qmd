@@ -7,6 +7,10 @@ editor: visual
 
 ```{r}
 library(brms)
+library("readr")
+
+trials <- read_csv("output/trials.csv")
+head(trials)
 ```
 
 ## Example: Poisson regression model
