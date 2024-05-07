@@ -24,20 +24,20 @@ head(trials)
 ### with lme4
 
 ```{r}
-mod <- lme4::lmer(N2 ~ 1 + n_b + (1 |participant_id), trials)
-summary(mod)
+mod_freq_ri <- lme4::lmer(N2 ~ 1 + n_b + (1 |participant_id), trials)
+summary(mod_freq_ri)
 ```
 
 ### p-values using lmerTest
 
 ```{r}
-mod2 <- lmerTest::lmer(N2 ~ 1 + n_b + (1 + n_b | participant_id), trials)
-summary(mod)
+mod_freq_ri_rs <- lmerTest::lmer(N2 ~ 1 + n_b + (1 + n_b | participant_id), trials)
+summary(mod_freq_ri_rs)
 ```
 
-### mit random Items
+### Mit random Items
 
 ```{r}
-mod3 <- lmerTest::lmer(N2 ~ 1 + n_b + (1 + n_b |participant_id) + (1 + n_b | Objektpaar), trials)
-summary(mod)
+mod_freq_randomitems <- lmerTest::lmer(N2 ~ 1 + n_b + (1 + n_b |participant_id) + (1 + n_b | Objektpaar), trials)
+summary(mod_freq_randomitems)
 ```
