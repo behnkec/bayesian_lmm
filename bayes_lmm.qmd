@@ -8,7 +8,9 @@ editor: visual
 
 ```{r}
 library(brms)
-library("readr")
+library(readr)
+library(bayesplot)
+library(ggplot2)
 ```
 
 ```{r}
@@ -16,10 +18,10 @@ trials <- read_csv("output/trials.csv")
 head(trials)
 ```
 
-## Bayesian LMM with brms
+## Bayesian LMM with brms (no priors)
 
 ```{r}
-mod <- brm(N2 ~ 1 + n_b + (1 + n_b |participant_id),
+mod_bayes_ri_rs_noprior <- brm(N2 ~ 1 + n_b + (1 + n_b |participant_id),
            data = trials)
 ```
 
@@ -27,9 +29,105 @@ mod <- brm(N2 ~ 1 + n_b + (1 + n_b |participant_id),
 summary(mod)
 plot(mod, variable = c("b_n_bnormal"))
 ```
+
 ```{r}
 mod$prior
 ```
 
+## Baysesian LMM with Priors
+### Priors
 
+```{r}
+prior_1 <- c(prior(normal(0, 10), class = Intercept), # grand mean
+             prior(normal(0, 10), class = b, coef = n_bnormal), # grand beta
+             prior(normal(0, 50), class = sigma), # within person variation
+             prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+             prior(normal(0, 20), class = sd, coef = n_bnormal, group = participant_id)) # between person variation in slope
+```
+
+```{r}
+prior_2 <- c(prior(normal(0, 50), class = Intercept), # grand mean
+             prior(normal(0, 20), class = b, coef = n_bnormal), # grand beta
+             prior(normal(0, 100), class = sigma), # within person variation
+             prior(normal(0, 40), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+             prior(normal(0, 40), class = sd, coef = n_bnormal, group = participant_id)) # between person variation in slope
+```
+
+
+### Model 1
+
+```{r}
+mod_bayes_ri_rs_1 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
+                       data = trials, 
+                       prior = prior_1,
+                       family = gaussian()) # default
+```
+
+```{r}
+summary(mod_bayes_ri_rs_1)
+mcmc_dens(mod_bayes_ri_rs_1, pars = variables(mod_bayes_ri_rs)[1:5])
+```
+Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+Running the chains for more iterations may help. See
+https://mc-stan.org/misc/warnings.html#bulk-essWarning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+Running the chains for more iterations may help. See
+https://mc-stan.org/misc/warnings.html#tail-ess
+
+### Model 2
+
+```{r}
+mod_bayes_ri_rs_2 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
+                       data = trials, 
+                       prior = prior_2,
+                       family = gaussian()) # default
+```
+
+```{r}
+summary(mod_bayes_ri_rs_1)
+mcmc_dens(mod_bayes_ri_rs_1, pars = variables(mod_bayes_ri_rs)[1:5])
+```
+
+
+### Prior predictive Checks
+
+Prior 1 (principled?)
+
+```{r}
+mod_prior_1 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
+                   data = trials, 
+                   prior = prior_2,
+                   family = gaussian(),
+                   sample_prior = "only",
+                   ) 
+```
+
+```{r}
+summary(mod_prior_1)
+plot(mod_prior_1)
+```
+
+
+Prior 2 
+
+```{r}
+mod_prior_2 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
+                   data = trials, 
+                   prior = prior_1,
+                   family = gaussian(),
+                   sample_prior = "only",
+                   ) 
+```
+
+```{r}
+summary(mod_prior_2)
+plot(mod_prior_2)
+```
+
+
+### Posterior predictive check
+
+```{r}
+pp_check(mod_bayes_ri_rs_1, ndraws = 11, type = "hist")
+pp_check(mod_bayes_ri_rs_1, ndraws = 100, type = "dens_overlay")
+```
 
