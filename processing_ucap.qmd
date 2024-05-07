@@ -13,6 +13,7 @@ Install reticulate
 
 ```{r}
 #install.packages("reticulate")
+library(reticulate)
 ```
 
 Check if conda distribution exists (and install if necessary)
