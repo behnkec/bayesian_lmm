@@ -26,12 +26,12 @@ mod_bayes_ri_rs_noprior <- brm(N2 ~ 1 + n_b + (1 + n_b |participant_id),
 ```
 
 ```{r}
-summary(mod)
-plot(mod, variable = c("b_n_bnormal"))
+summary(mod_bayes_ri_rs_noprior)
+plot(mod_bayes_ri_rs_noprior, variable = c("b_n_bnormal"))
 ```
 
 ```{r}
-mod$prior
+mod_bayes_ri_rs_noprior$prior
 ```
 
 ## Baysesian LMM with Priors
@@ -62,16 +62,23 @@ mod_bayes_ri_rs_1 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
                        prior = prior_1,
                        family = gaussian()) # default
 ```
-
-```{r}
-summary(mod_bayes_ri_rs_1)
-mcmc_dens(mod_bayes_ri_rs_1, pars = variables(mod_bayes_ri_rs)[1:5])
-```
 Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 Running the chains for more iterations may help. See
 https://mc-stan.org/misc/warnings.html#bulk-essWarning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
 Running the chains for more iterations may help. See
 https://mc-stan.org/misc/warnings.html#tail-ess
+
+```{r}
+summary(mod_bayes_ri_rs_1)
+# mcmc_dens gives density plots of posterior distribution
+mcmc_dens(mod_bayes_ri_rs_1, pars = variables(mod_bayes_ri_rs_1)[1:5])
+```
+
+```{r}
+
+```
+
+
 
 ### Model 2
 
@@ -83,8 +90,9 @@ mod_bayes_ri_rs_2 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
 ```
 
 ```{r}
-summary(mod_bayes_ri_rs_1)
-mcmc_dens(mod_bayes_ri_rs_1, pars = variables(mod_bayes_ri_rs)[1:5])
+summary(mod_bayes_ri_rs_2)
+# mcmc_dens gives density plots of posterior distribution
+mcmc_dens(mod_bayes_ri_rs_2, pars = variables(mod_bayes_ri_rs_2)[1:5])
 ```
 
 
@@ -95,7 +103,7 @@ Prior 1 (principled?)
 ```{r}
 mod_prior_1 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
                    data = trials, 
-                   prior = prior_2,
+                   prior = prior_1,
                    family = gaussian(),
                    sample_prior = "only",
                    ) 
@@ -105,6 +113,12 @@ mod_prior_1 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
 summary(mod_prior_1)
 plot(mod_prior_1)
 ```
+```{r}
+pp_check(mod_prior_1, ndraws = 11, type = "hist")
+pp_check(mod_prior_1, ndraws = 100, type = "stat", stat = "mean")
+pp_check(mod_prior_1, ndraws = 100, type = "stat", stat = "min")
+pp_check(mod_prior_1, ndraws = 100, type = "stat", stat = "max")
+```
 
 
 Prior 2 
@@ -112,7 +126,7 @@ Prior 2
 ```{r}
 mod_prior_2 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
                    data = trials, 
-                   prior = prior_1,
+                   prior = prior_2,
                    family = gaussian(),
                    sample_prior = "only",
                    ) 
@@ -126,8 +140,32 @@ plot(mod_prior_2)
 
 ### Posterior predictive check
 
+#### Model 1
+
 ```{r}
 pp_check(mod_bayes_ri_rs_1, ndraws = 11, type = "hist")
 pp_check(mod_bayes_ri_rs_1, ndraws = 100, type = "dens_overlay")
+```
+
+```{r}
+pp_check(mod_bayes_ri_rs_1,
+          type = "dens_overlay_grouped",
+          ndraws = 100,
+          group = "participant_id")
+```
+-> sd nicht für alle Personen gleich
+
+#### Model 2
+
+```{r}
+pp_check(mod_bayes_ri_rs_2, ndraws = 11, type = "hist")
+pp_check(mod_bayes_ri_rs_2, ndraws = 100, type = "dens_overlay")
+```
+
+```{r}
+pp_check(mod_bayes_ri_rs_2,
+          type = "dens_overlay_grouped",
+          ndraws = 100,
+          group = "participant_id")
 ```
 
