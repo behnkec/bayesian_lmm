@@ -1,10 +1,7 @@
 ---
-title: "Processing UCAP"
+title: "Processing ERP CORE - N170"
 format: html
-editor: visual
-execute:
-  warning: false
-  error: false
+editor: source
 ---
 
 ## Installation
@@ -42,12 +39,12 @@ library("ggplot2")
 library("lme4")
 ```
 
-### Loading the pipeline & downloading UCAP data
+### Loading the pipeline & downloading ERP Core Data
 
 ```{r}
 pipeline <- import("pipeline")
-ucap_files <- pipeline$datasets$get_ucap()
-print(ucap_files)
+n170_files <- pipeline$datasets$get_erpcore("N170")
+print(n170_files)
 ```
 
 ### Running the pipeline
@@ -56,24 +53,24 @@ print(ucap_files)
 res <- pipeline$group_pipeline(
 
   # Input/output paths
-  raw_files = ucap_files$raw_files,
-  log_files = ucap_files$log_files,
-  output_dir = "output_ucap",
+  raw_files = n170_files$raw_files,
+  log_files = n170_files$log_files,
+  output_dir = "output_erpcore",
 
   # Preprocessing options
   downsample_sfreq = 250.0,
-  besa_files = ucap_files$besa_files,
+  montage = 'biosemi64',
+  ica_method = 'fastica',
+  #ica_n_components = 15,
 
   # Epoching options
-  triggers = c(201:208, 211:218),
+  triggers = c(1:80),
+  skip_log_conditions = list("value" = c(81:202)),
   components = list(
-    "name" = list("N2", "P3b"),
-    "tmin" = list(0.25, 0.4),
-    "tmax" = list(0.35, 0.55),
-    "roi" = list(
-      c("FC1", "FC2", "C1", "C2", "Cz"),
-      c("CP3", "CP1", "CPz", "CP2", "CP4", "P3", "Pz", "P4", "PO3", "POz", "PO4")
-    )
+    "name" = list("N170"),
+    "tmin" = list(0.125),
+    "tmax" = list(0.225),
+    "roi" = list("PO8")
   ),
 )
 ```
@@ -90,10 +87,12 @@ head(trials)
 ```
 
 ```{r}
-trials |>
-  ggplot(aes(x = N2, fill = n_b)) +
+trials_cond <- trials |>
+  mutate(f_c = ifelse(value >= 41, "car", "face"))
+trials_cond |>
+  ggplot(aes(x = N170, fill = f_c)) +
   geom_density(color = NA, alpha = 0.5) +
-  labs(x = "N2 amplitude (µV)", y = "Density", fill = "Condition") +
+  labs(x = "N170 amplitude (µV)", y = "Density", fill = "Condition") +
   theme_minimal(base_size = 25.0) +
   theme(legend.position = "top")
 ```

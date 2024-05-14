@@ -14,7 +14,7 @@ library(ggplot2)
 ```
 
 ```{r}
-trials <- read_csv("output/trials.csv")
+trials <- read_csv("output_ucap/trials.csv")
 head(trials)
 ```
 

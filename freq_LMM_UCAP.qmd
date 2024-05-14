@@ -1,7 +1,7 @@
 ---
 title: "Frequentist Linear Mixed Modell for the UCAP data set"
 format: html
-editor: visual
+editor: source
 ---
 
 ## Load packages and dataset
@@ -15,7 +15,7 @@ library("readr")
 ```
 
 ```{r}
-trials <- read_csv("output/trials.csv")
+trials <- read_csv("output_ucap/trials.csv")
 head(trials)
 ```
 

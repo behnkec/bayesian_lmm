@@ -9,7 +9,7 @@ editor: visual
 library(brms)
 library("readr")
 
-trials <- read_csv("output/trials.csv")
+trials <- read_csv("output_ucap/trials.csv")
 head(trials)
 ```
 
