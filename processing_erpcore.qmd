@@ -61,15 +61,14 @@ res <- pipeline$group_pipeline(
   downsample_sfreq = 250.0,
   montage = 'biosemi64',
   ica_method = 'fastica',
-  #ica_n_components = 15,
 
   # Epoching options
   triggers = c(1:80),
   skip_log_conditions = list("value" = c(81:202)),
   components = list(
     "name" = list("N170"),
-    "tmin" = list(0.125),
-    "tmax" = list(0.225),
+    "tmin" = list(0.11),
+    "tmax" = list(0.15),
     "roi" = list("PO8")
   ),
 )

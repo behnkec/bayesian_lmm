@@ -1,7 +1,7 @@
 ---
 title: "Getting started with the brms package"
 format: html
-editor: visual
+editor: source
 ---
 ## Load package
 

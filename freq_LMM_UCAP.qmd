@@ -1,5 +1,5 @@
 ---
-title: "Frequentist Linear Mixed Modell for the UCAP data set"
+title: "Frequentist Linear Mixed Model for the UCAP data set"
 format: html
 editor: source
 ---

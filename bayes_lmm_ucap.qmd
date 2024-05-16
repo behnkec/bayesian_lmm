@@ -1,7 +1,7 @@
 ---
 title: "Bayesian Linear Mixed Modell for the UCAP data set"
 format: html
-editor: visual
+editor: source
 ---
 
 ## Load packages and data set
@@ -53,6 +53,30 @@ prior_2 <- c(prior(normal(0, 50), class = Intercept), # grand mean
              prior(normal(0, 40), class = sd, coef = n_bnormal, group = participant_id)) # between person variation in slope
 ```
 
+```{r}
+prior_3 <- c(prior(normal(0, 10), class = Intercept), # grand mean
+             prior(normal(0, 10), class = b, coef = n_bnormal), # grand beta
+             prior(normal(0, 50), class = sigma), # within person variation
+             prior(normal(0, 10), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+             prior(normal(0, 10), class = sd, coef = n_bnormal, group = participant_id)) # between person variation in slope
+```
+
+```{r}
+prior_4 <- c(prior(normal(0, 10), class = Intercept), # grand mean
+             prior(normal(0, 5), class = b, coef = n_bnormal), # grand beta
+             prior(normal(0, 50), class = sigma), # within person variation
+             prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+             prior(normal(0, 20), class = sd, coef = n_bnormal, group = participant_id)) # between person variation in slope
+```
+
+```{r}
+prior_5 <- c(prior(normal(0, 10), class = Intercept), # grand mean
+             prior(normal(0, 5), class = b, coef = n_bnormal), # grand beta
+             prior(normal(0, 50), class = sigma), # within person variation
+             prior(normal(0, 10), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+             prior(normal(0, 10), class = sd, coef = n_bnormal, group = participant_id)) # between person variation in slope
+```
+
 
 ### Model 1
 
@@ -95,6 +119,11 @@ summary(mod_bayes_ri_rs_2)
 mcmc_dens(mod_bayes_ri_rs_2, pars = variables(mod_bayes_ri_rs_2)[1:5])
 ```
 
+### Model with more iterations
+
+### Model with correlation
+
+### Distributional regression model
 
 ### Prior predictive Checks
 
@@ -154,6 +183,15 @@ pp_check(mod_bayes_ri_rs_1,
           group = "participant_id")
 ```
 -> sd nicht für alle Personen gleich
+
+```{r}
+pp_check(mod_bayes_ri_rs_1,
+         type = "stat_grouped",
+         ndraws = 1000,
+         group = "participant_id",
+         stat = "sd",
+         facet_args = list(scales = "fixed"))
+```
 
 #### Model 2
 
