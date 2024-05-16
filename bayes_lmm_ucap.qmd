@@ -108,9 +108,9 @@ mcmc_dens(mod_bayes_ri_rs_1, pars = variables(mod_bayes_ri_rs_1)[1:5])
 
 ```{r}
 mod_bayes_ri_rs_2 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
-                       data = trials, 
-                       prior = prior_2,
-                       family = gaussian()) # default
+                         data = trials, 
+                         prior = prior_2,
+                         family = gaussian()) # default
 ```
 
 ```{r}
@@ -119,11 +119,93 @@ summary(mod_bayes_ri_rs_2)
 mcmc_dens(mod_bayes_ri_rs_2, pars = variables(mod_bayes_ri_rs_2)[1:5])
 ```
 
+### Model 3
+
+```{r}
+mod_bayes_ri_rs_3 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
+                         data = trials, 
+                         prior = prior_3,
+                         family = gaussian()) # default
+```
+
+```{r}
+summary(mod_bayes_ri_rs_3)
+# mcmc_dens gives density plots of posterior distribution
+mcmc_dens(mod_bayes_ri_rs_3, pars = variables(mod_bayes_ri_rs_3)[1:5])
+```
+
 ### Model with more iterations
+
+```{r}
+mod_bayes_ri_rs_iter <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
+                            data = trials, 
+                            prior = prior_1,
+                            family = gaussian(), # default
+                            iter = 4000) 
+```
+
+```{r}
+summary(mod_bayes_ri_rs_iter)
+# mcmc_dens gives density plots of posterior distribution
+mcmc_dens(mod_bayes_ri_rs_iter, pars = variables(mod_bayes_ri_rs_iter)[1:5])
+```
 
 ### Model with correlation
 
+```{r}
+prior_cor <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                prior(normal(0, 10), class = b, coef = n_bnormal), # grand beta
+                prior(normal(0, 50), class = sigma), # within person variation
+                prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                prior(normal(0, 20), class = sd, coef = n_bnormal, group = participant_id), # between person variation in slope
+                prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+
+#### Model
+
+```{r}
+mod_bayes_ri_rs_cor <- brm(N2 ~ 1 + n_b + (1 + n_b | participant_id),
+                           data = trials, 
+                           prior = prior_cor,
+                           family = gaussian()) # default
+```
+
+```{r}
+summary(mod_bayes_ri_rs_cor)
+# mcmc_dens gives density plots of posterior distribution
+mcmc_dens(mod_bayes_ri_rs_cor, pars = variables(mod_bayes_ri_rs_cor)[1:6])
+```
+
 ### Distributional regression model
+
+#### Prior
+
+```{r}
+prior_dis <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                prior(normal(0, 10), class = b, coef = n_bnormal), # grand beta
+                prior(normal(0, log(50)), class = Intercept, dpar = sigma),
+                prior(normal(0, 5), class = sd, group = participant_id, dpar = sigma), 
+                prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                prior(normal(0, 20), class = sd, coef = n_bnormal, group = participant_id), # between person variation in slope
+                prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+
+#### Model
+
+```{r}
+mod_bayes_ri_rs_dis <- brm(brmsformula(N2 ~ 1 + n_b + (1 + n_b | participant_id), sigma ~ 1 + (1 | participant_id)),
+                           data = trials, 
+                           prior = prior_dis,
+                           family = gaussian()) # default
+```
+
+```{r}
+summary(mod_bayes_ri_rs_dis)
+# mcmc_dens gives density plots of posterior distribution
+mcmc_dens(mod_bayes_ri_rs_dis, pars = variables(mod_bayes_ri_rs_dis)[1:7])
+```
 
 ### Prior predictive Checks
 

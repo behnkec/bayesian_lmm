@@ -133,15 +133,6 @@ summary(mod_erpcore_ri_rs_dis)
 mcmc_dens(mod_erpcore_ri_rs_dis, pars = variables(mod_erpcore_ri_rs_dis)[1:7])
 ```
 
-```{r}
-default_prior(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
-                             data = trials_cond, 
-                             prior = prior_0dis,
-                             family = gaussian())
-```
-
-
-
 
 ### Posterior predictive check
 
