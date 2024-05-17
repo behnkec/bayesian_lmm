@@ -127,7 +127,12 @@ mod_bayes_ri_rs_3 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
                          prior = prior_3,
                          family = gaussian()) # default
 ```
-
+Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+Running the chains for more iterations may help. See
+https://mc-stan.org/misc/warnings.html#bulk-ess
+Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+Running the chains for more iterations may help. See
+https://mc-stan.org/misc/warnings.html#tail-ess
 ```{r}
 summary(mod_bayes_ri_rs_3)
 # mcmc_dens gives density plots of posterior distribution
