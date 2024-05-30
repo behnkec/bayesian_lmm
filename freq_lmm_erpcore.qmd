@@ -3,6 +3,7 @@ title: "Frequentist Linear Mixed Model for the ERP CORE data set"
 format: html
 editor: visual
 ---
+
 ## Load packages and dataset
 
 ```{r}
@@ -19,6 +20,7 @@ head(trials)
 ```
 
 Add column for face vs. car condition
+
 ```{r}
 trials_cond <- trials_erpcore |>
   mutate(f_c = ifelse(value >= 41, "car", "face"))
@@ -33,5 +35,3 @@ head(trials_cond)
 mod_freq_ri_rs_erpcore <- lmerTest::lmer(N170 ~ 1 + f_c + (1 + f_c | participant_id), trials_cond)
 summary(mod_freq_ri_rs_erpcore)
 ```
-
-

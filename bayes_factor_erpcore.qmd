@@ -1,0 +1,125 @@
+---
+title: "Hypothesis testing (erpcore) with bridge sampling"
+format: html
+editor: visual
+---
+
+## Load packages and data set
+
+```{r}
+library(brms)
+library(readr)
+library(bayesplot)
+library(ggplot2)
+library(dplyr)
+library(bridgesampling)
+```
+
+```{r}
+trials_erpcore <- read_csv("output_erpcore/trials.csv")
+head(trials_erpcore)
+```
+
+Add column for face vs. car condition
+```{r}
+trials_cond <- trials_erpcore |>
+  mutate(f_c = ifelse(value >= 41, "car", "face"))
+head(trials_cond)
+```
+
+## Priors
+
+### Model with correlation
+
+```{r}
+prior_0cor <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                prior(normal(0, 10), class = b, coef = f_cface), # grand beta
+                prior(normal(0, 50), class = sigma), # within person variation
+                prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), # between person variation in slope
+                prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+
+### Distributional Regression Model
+
+```{r}
+prior_0dis <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                prior(normal(0, 10), class = b, coef = f_cface), # grand beta
+                prior(normal(0, log(50)), class = Intercept, dpar = sigma),
+                prior(normal(0, 5), class = sd, group = participant_id, dpar = sigma), 
+                prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), # between person variation in slope
+                prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+
+## Fit model
+
+### Model with correlation
+
+Model 1 
+
+```{r}
+mod_erpcore_cor_bf_1 <- brm(N170 ~ 1 + f_c + (1 + f_c | participant_id),
+                            data = trials_cond, 
+                            prior = prior_0cor,
+                            warmup = 2000,
+                            iter = 20000,
+                            control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                            save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                            family = gaussian())
+```
+Warning: There were 5 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
+https://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded
+Warning: Examine the pairs() plot to diagnose sampling problems
+
+--> just an efficiency concern
+
+```{r}
+summary(mod_erpcore_cor_bf)
+# mcmc_dens gives density plots of posterior distribution
+mcmc_dens(mod_erpcore_cor_bf, pars = variables(mod_erpcore_cor_bf)[1:6])
+```
+
+
+
+Model 0 (without fixed effect of faces vs. cars)
+
+```{r}
+mod_erpcore_cor_bf_0 <- brm(N170 ~ 1 + (1 + f_c | participant_id),
+                            data = trials_cond, 
+                            prior = prior_0cor[prior_0cor$class != "b", ],
+                            warmup = 2000,
+                            iter = 20000,
+                            control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                            save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                            family = gaussian())
+```
+
+Compute marginal log likelihood
+
+```{r}
+margLogLik_linear <- bridge_sampler(mod_erpcore_cor_bf_1, silent = TRUE)
+margLogLik_null <- bridge_sampler(mod_erpcore_cor_bf, silent = TRUE)
+```
+
+Compute Bayes Factor
+
+```{r}
+(BF_cor <- bayes_factor(margLogLik_linear, margLogLik_null))
+```
+
+Prior for b N(0,10) -> Estimated Bayes factor in favor of x1 over x2: 5984.05981
+
+
+### Distributional model
+
+```{r}
+mod_erpcore_dis_bf <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
+                          data = trials_cond, 
+                          prior = prior_0dis,
+                          family = gaussian()) 
+```
+
+

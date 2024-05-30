@@ -146,7 +146,9 @@ mod_bayes_ri_rs_iter <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
                             data = trials, 
                             prior = prior_1,
                             family = gaussian(), # default
-                            iter = 4000) 
+                            iter = 4000,
+                            warmup = 1000) 
+save(mod_bayes_ri_rs_iter, file = "mod_bayes_ri_rs_iter.RData")
 ```
 
 ```{r}

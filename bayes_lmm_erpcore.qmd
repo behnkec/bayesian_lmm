@@ -11,6 +11,7 @@ library(brms)
 library(readr)
 library(bayesplot)
 library(ggplot2)
+library(dplyr)
 ```
 
 ```{r}
@@ -133,8 +134,12 @@ summary(mod_erpcore_ri_rs_dis)
 mcmc_dens(mod_erpcore_ri_rs_dis, pars = variables(mod_erpcore_ri_rs_dis)[1:7])
 ```
 
+## Prior predictive Checks
 
-### Posterior predictive check
+
+
+
+## Posterior predictive check
 
 #### Model 1
 
