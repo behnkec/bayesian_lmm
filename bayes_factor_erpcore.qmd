@@ -278,13 +278,13 @@ label_format <- function(x) {
   })
 }
 # Annahmen für die Priors und den Bayes-Faktor (Beispielwerte)
-priors <- c(0.01, 0.1, 0.5, 1, 2, 5, 10, 15)
-bayes_factor <- c(0.1, 0.5, 1, 5, 10, 50, 100, 6000)
-bayes_factor_2 <- c(40, 50, 60, 2000, 4, 5, 20, 100)
+#priors <- c(0.01, 0.1, 0.5, 1, 2, 5, 10, 15)
+#bayes_factor <- c(0.1, 0.5, 1, 5, 10, 50, 100, 6000)
+#bayes_factor_2 <- c(40, 50, 60, 2000, 4, 5, 20, 100)
 
 # Erstelle einen Tibble mit den Daten
-BFs <- tibble::tibble(beta_sd = rep(priors, 2), BF = c(bayes_factor, bayes_factor_2), 
-                      Prior = rep(c("Prior1", "Prior2"), each = length(priors)))
+#BFs <- tibble::tibble(beta_sd = rep(priors, 2), BF = c(bayes_factor, bayes_factor_2), 
+#                      Prior = rep(c("Prior1", "Prior2"), each = length(priors)))
 
 # Erstelle den Plot mit ggplot2
 plot <- ggplot(BFs, aes(x = beta_sd, y = BF, color = Prior)) +
