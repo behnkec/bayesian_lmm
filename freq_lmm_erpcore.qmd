@@ -7,16 +7,17 @@ editor: visual
 ## Load packages and dataset
 
 ```{r}
-library("Rmisc")
-library("dplyr")
-library("ggplot2")
-library("lme4")
-library("readr")
+library(Rmisc)
+library(dplyr)
+library(ggplot2)
+library(lme4)
+library(readr)
+library(papaja)
 ```
 
 ```{r}
 trials_erpcore <- read_csv("output_ucap/trials.csv")
-head(trials)
+head(trials_erpcore)
 ```
 
 Add column for face vs. car condition
@@ -34,4 +35,6 @@ head(trials_cond)
 ```{r}
 mod_freq_ri_rs_erpcore <- lmerTest::lmer(N170 ~ 1 + f_c + (1 + f_c | participant_id), trials_cond)
 summary(mod_freq_ri_rs_erpcore)
+apa_mod_freq_ri_rs_erpcore <- apa_print(mod_freq_ri_rs_erpcore)
+apa_table(apa_mod_freq_ri_rs_erpcore$table, caption = "...")
 ```

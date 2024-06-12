@@ -7,11 +7,12 @@ editor: source
 ## Load packages and dataset
 
 ```{r}
-library("Rmisc")
-library("dplyr")
-library("ggplot2")
-library("lme4")
-library("readr")
+library(Rmisc)
+library(dplyr)
+library(ggplot2)
+library(lme4)
+library(readr)
+library(papaja)
 ```
 
 ```{r}
@@ -33,6 +34,8 @@ summary(mod_freq_ri)
 ```{r}
 mod_freq_ri_rs <- lmerTest::lmer(N2 ~ 1 + n_b + (1 + n_b | participant_id), trials)
 summary(mod_freq_ri_rs)
+apa_mod_freq_ri_rs <- apa_print(mod_freq_ri_rs)
+apa_table(apa_mod_freq_ri_rs$table, caption = "...")
 ```
 
 ### Mit random Items
