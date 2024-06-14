@@ -12,6 +12,8 @@ library(readr)
 library(bayesplot)
 library(ggplot2)
 library(dplyr)
+
+options(mc.cores = 4)
 ```
 
 ```{r}
