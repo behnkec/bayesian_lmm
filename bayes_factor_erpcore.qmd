@@ -176,44 +176,38 @@ Prior for b N(0,10) -> Estimated Bayes factor in favor of x1 over x2: 0.03914
 
 ## Sensitivity Analysis for correlation model
 
-
-
-## Sensitivity Analysis for distributional model
-
 Null Model
 
 ```{r}
-mod_erpcore_dis_bf_0_1 <- brm(N170 ~ 1 + (1 + f_c | participant_id),
-                            data = trials_cond, 
-                            prior = c(prior(normal(0, 10), class = Intercept),
-                                      prior(normal(0, log(50)), class = Intercept, dpar = sigma),
-                                      prior(normal(0, 5), class = sd, group = participant_id, dpar = sigma), 
-                                      prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id),  
-                                      prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), 
-                                      prior(lkj(2), class = cor, group = participant_id)),
-                            warmup = 2000,
-                            iter = 20000,
-                            control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
-                            save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
-                            family = gaussian())
+mod_erpcore_cor_bf_0_1 <- brm(N170 ~ 1 + (1 + f_c | participant_id),
+                             data = trials_cond, 
+                             prior = c(prior(normal(0, 10), class = Intercept),
+                                       prior(normal(0, 50), class = sigma),
+                                       prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id),  
+                                       prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), 
+                                       prior(lkj(2), class = cor, group = participant_id)),
+                             warmup = 2000,
+                             iter = 20000,
+                             control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                             save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                             family = gaussian())
 
-mLL_null_dis_1 <- bridge_sampler(mod_erpcore_dis_bf_0_1, silent = TRUE)
+mLL_null_cor_1 <- bridge_sampler(mod_erpcore_cor_bf_0_1, silent = TRUE)
 
-mod_erpcore_dis_bf_0_2 <- brm(N170 ~ 1 + (1 + f_c | participant_id),
-                            data = trials_cond, 
-                            prior = c(prior(normal(0, 20), class = Intercept),
-                                      prior(normal(0, log(100)), class = Intercept, dpar = sigma),
-                                      prior(normal(0, 10), class = sd, group = participant_id, dpar = sigma), 
-                                      prior(normal(0, 40), class = sd, coef = Intercept, group = participant_id),  
-                                      prior(normal(0, 40), class = sd, coef = f_cface, group = participant_id), 
-                                      prior(lkj(1), class = cor, group = participant_id)),
-                            warmup = 2000,
-                            iter = 20000,
-                            control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
-                            save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
-                            family = gaussian())
+mod_erpcore_cor_bf_0_2 <- brm(N170 ~ 1 + (1 + f_c | participant_id),
+                              data = trials_cond, 
+                              prior = c(prior(normal(0, 20), class = Intercept),
+                                        prior(normal(0, 50), class = sigma),
+                                        prior(normal(0, 40), class = sd, coef = Intercept, group = participant_id),  
+                                        prior(normal(0, 40), class = sd, coef = f_cface, group = participant_id), 
+                                        prior(lkj(1), class = cor, group = participant_id)),
+                              warmup = 2000,
+                              iter = 20000,
+                              control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                              save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                              family = gaussian())
 
-mLL_null_dis_2 <- bridge_sampler(mod_erpcore_dis_bf_0_2, silent = TRUE)
+mLL_null_cor_2 <- bridge_sampler(mod_erpcore_cor_bf_0_2, silent = TRUE)
 
 ```
 
@@ -222,62 +216,63 @@ mLL_null_dis_2 <- bridge_sampler(mod_erpcore_dis_bf_0_2, silent = TRUE)
 ```{r}
 prior_b_sd <- c(1, 1.5, 2, 2.5, 5, 8, 10, 15, 20, 40, 50, 100)
 
-BF_1 <- c()
-BF_2 <- c()
+BF_cor_1 <- c()
+BF_cor_2 <- c()
 
 for (i in 1:length(prior_b_sd)) {
   
   pbsd <- prior_b_sd[i]
   
-  mod_1 <- brm(N170 ~ 1 + f_c + (1 + f_c | participant_id),
-             data = trials_cond, 
-             prior = c(prior(normal(0, 10), class = Intercept),
-                       set_prior(paste0("normal(0,", pbsd, ")"), class = b, coef = f_cface),
-                       prior(normal(0, log(50)), class = Intercept, dpar = sigma),
-                       prior(normal(0, 5), class = sd, group = participant_id, dpar = sigma), 
-                       prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id),  
-                       prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), 
-                       prior(lkj(2), class = cor, group = participant_id)),
-             warmup = 2000,
-             iter = 20000,
-             cores = 1, # within-chain parallelization: CPU_tot = cores * chains
-             control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
-             save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
-             family = gaussian())
+  mod_cor_1 <- brm(N170 ~ 1 + f_c + (1 + f_c | participant_id),
+                   data = trials_cond, 
+                   prior = c(prior(normal(0, 10), class = Intercept),
+                             set_prior(paste0("normal(0,", pbsd, ")"), class = "b", coef = "f_cface"),
+                             prior(normal(0, 50), class = sigma), 
+                             prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id),  
+                             prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), 
+                             prior(lkj(2), class = cor, group = participant_id)),
+                   warmup = 2000,
+                   iter = 20000,
+                   cores = 1, # within-chain parallelization: CPU_tot = cores * chains
+                   control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                   save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                   family = gaussian())
   
-  mLL_linear_dis_1 <- bridge_sampler(mod, silent = TRUE)
+  mLL_linear_cor_1 <- bridge_sampler(mod_cor_1, silent = TRUE)
   
-  BF_1 <- c(BF_1, bayes_factor(mLL_linear_dis_1, mLL_null_dis_1)$bf)
+  BF_cor_1 <- c(BF_cor_1, bayes_factor(mLL_linear_cor_1, mLL_null_cor_1)$bf)
 }
+```
 
+```{r}
 for (i in 1:length(prior_b_sd)) {
   
   pbsd <- prior_b_sd[i]
   
-  mod_2 <- brm(N170 ~ 1 + f_c + (1 + f_c | participant_id),
-             data = trials_cond, 
-             prior = c(prior(normal(0, 20), class = Intercept),
-                       set_prior(paste0("normal(0,", pbsd, ")"), class = b, coef = f_cface),
-                       prior(normal(0, log(100)), class = Intercept, dpar = sigma),
-                       prior(normal(0, 10), class = sd, group = participant_id, dpar = sigma), 
-                       prior(normal(0, 40), class = sd, coef = Intercept, group = participant_id),  
-                       prior(normal(0, 40), class = sd, coef = f_cface, group = participant_id), 
-                       prior(lkj(1), class = cor, group = participant_id)),
-             warmup = 2000,
-             iter = 20000,
-             cores = 1, # within-chain parallelization: CPU_tot = cores * chains
-             control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
-             save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
-             family = gaussian())
+  mod_cor_2 <- brm(N170 ~ 1 + f_c + (1 + f_c | participant_id),
+                   data = trials_cond, 
+                   prior = c(prior(normal(0, 20), class = Intercept),
+                             set_prior(paste0("normal(0,", pbsd, ")"), class = b, coef = f_cface),
+                             prior(normal(0, log(100)), class = Intercept, dpar = sigma),
+                             prior(normal(0, 10), class = sd, group = participant_id, dpar = sigma), 
+                             prior(normal(0, 40), class = sd, coef = Intercept, group = participant_id),  
+                             prior(normal(0, 40), class = sd, coef = f_cface, group = participant_id), 
+                             prior(lkj(1), class = cor, group = participant_id)),
+                   warmup = 2000,
+                   iter = 20000,
+                   cores = 1, # within-chain parallelization: CPU_tot = cores * chains
+                   control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                   save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                   family = gaussian())
   
-  mLL_linear_dis_2 <- bridge_sampler(mod_2, silent = TRUE)
+  mLL_linear_cor_2 <- bridge_sampler(mod_cor_2, silent = TRUE)
   
-  BF_2 <- c(BF_2, bayes_factor(mLL_linear_dis_2, mLL_null_dis_2)$bf)
+  BF_cor_2 <- c(BF_cor_2, bayes_factor(mLL_linear_cor_2, mLL_null_cor_2)$bf)
 }
 
 
-BFs <- tibble::tibble(beta_sd = rep(prior_b_sd, 2), BF = c(BF_1, BF_2), 
-                      Prior = rep(c("Prior1", "Prior2"), each = length(prior_b_sd)))
+BFs_cor <- tibble::tibble(beta_sd = rep(prior_b_sd, 2), BF_cor = c(BF_cor_1, BF_cor_2), 
+                          Prior = rep(c("Prior1", "Prior2"), each = length(prior_b_sd)))
 ```
 
 ### Plot
@@ -302,11 +297,11 @@ label_format <- function(x) {
 #                      Prior = rep(c("Prior1", "Prior2"), each = length(priors)))
 
 # Erstelle den Plot mit ggplot2
-plot <- ggplot(BFs, aes(x = beta_sd, y = BF, color = Prior)) +
+plot_cor <- ggplot(BFs_cor, aes(x = beta_sd, y = BF_cor, color = Prior)) +
   geom_line() +  # Linie zeichnen
   geom_point() +
   scale_y_log10(
-    limits = c(0.01, max(BFs$BF)),  # Begrenzung der y-Achse
+    limits = c(0.01, max(BFs_cor$BF_cor)),  # Begrenzung der y-Achse
     breaks = c(0.01, 1/30, 0.1, 1/3, 1, 3, 10, 30, 100, 1000, 10000),  # Achsenbeschriftungen
     labels = label_format
   ) +  # Logarithmische y-Achse
@@ -316,7 +311,151 @@ plot <- ggplot(BFs, aes(x = beta_sd, y = BF, color = Prior)) +
   scale_color_manual(values = c("Prior1" = "blue", "Prior2" = "red"))
 
 # Zeige den Plot an
-print(plot)
+print(plot_cor)
+
+```
+
+
+
+## Sensitivity Analysis for distributional model
+
+Null Model
+
+```{r}
+mod_erpcore_dis_bf_0_1 <- brm(brmsformula(N170 ~ 1 + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
+                             data = trials_cond, 
+                             prior = c(prior(normal(0, 10), class = Intercept),
+                                       prior(normal(0, log(50)), class = Intercept, dpar = sigma),
+                                       prior(normal(0, 5), class = sd, group = participant_id, dpar = sigma), 
+                                       prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id),  
+                                       prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), 
+                                       prior(lkj(2), class = cor, group = participant_id)),
+                             warmup = 2000,
+                             iter = 20000,
+                             control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                             save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                             family = gaussian())
+
+mLL_null_dis_1 <- bridge_sampler(mod_erpcore_dis_bf_0_1, silent = TRUE)
+
+mod_erpcore_dis_bf_0_2 <- brm(brmsformula(N170 ~ 1 + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
+                              data = trials_cond, 
+                              prior = c(prior(normal(0, 20), class = Intercept),
+                                        prior(normal(0, log(100)), class = Intercept, dpar = sigma),
+                                        prior(normal(0, 10), class = sd, group = participant_id, dpar = sigma), 
+                                        prior(normal(0, 40), class = sd, coef = Intercept, group = participant_id),  
+                                        prior(normal(0, 40), class = sd, coef = f_cface, group = participant_id), 
+                                        prior(lkj(1), class = cor, group = participant_id)),
+                              warmup = 2000,
+                              iter = 20000,
+                              control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                              save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                              family = gaussian())
+
+mLL_null_dis_2 <- bridge_sampler(mod_erpcore_dis_bf_0_2, silent = TRUE)
+
+```
+
+
+
+```{r}
+prior_b_sd <- c(1, 1.5, 2, 2.5, 5, 8, 10, 15, 20, 40, 50, 100)
+
+BF_dis_1 <- c()
+BF_dis_2 <- c()
+
+for (i in 1:length(prior_b_sd)) {
+  
+  pbsd <- prior_b_sd[i]
+  
+  mod_dis_1 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
+                   data = trials_cond, 
+                   prior = c(prior(normal(0, 10), class = Intercept),
+                             set_prior(paste0("normal(0,", pbsd, ")"), class = b, coef = f_cface),
+                             prior(normal(0, log(50)), class = Intercept, dpar = sigma),
+                             prior(normal(0, 5), class = sd, group = participant_id, dpar = sigma), 
+                             prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id),  
+                             prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), 
+                             prior(lkj(2), class = cor, group = participant_id)),
+                   warmup = 2000,
+                   iter = 20000,
+                   cores = 1, # within-chain parallelization: CPU_tot = cores * chains
+                   control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                   save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                   family = gaussian())
+  
+  mLL_linear_dis_1 <- bridge_sampler(mod_dis_1, silent = TRUE)
+  
+  BF_dis_1 <- c(BF_dis_1, bayes_factor(mLL_linear_dis_1, mLL_null_dis_1)$bf)
+}
+
+for (i in 1:length(prior_b_sd)) {
+  
+  pbsd <- prior_b_sd[i]
+  
+  mod_dis_2 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
+                   data = trials_cond, 
+                   prior = c(prior(normal(0, 20), class = Intercept),
+                             set_prior(paste0("normal(0,", pbsd, ")"), class = b, coef = f_cface),
+                             prior(normal(0, log(100)), class = Intercept, dpar = sigma),
+                             prior(normal(0, 10), class = sd, group = participant_id, dpar = sigma), 
+                             prior(normal(0, 40), class = sd, coef = Intercept, group = participant_id),  
+                             prior(normal(0, 40), class = sd, coef = f_cface, group = participant_id), 
+                             prior(lkj(1), class = cor, group = participant_id)),
+                   warmup = 2000,
+                   iter = 20000,
+                   cores = 1, # within-chain parallelization: CPU_tot = cores * chains
+                   control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                   save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                   family = gaussian())
+  
+  mLL_linear_dis_2 <- bridge_sampler(mod_dis_2, silent = TRUE)
+  
+  BF_dis_2 <- c(BF_dis_2, bayes_factor(mLL_linear_dis_2, mLL_null_dis_2)$bf)
+}
+
+
+BFs_dis <- tibble::tibble(beta_sd = rep(prior_b_sd, 2), BF_dis = c(BF_dis_1, BF_dis_2), 
+                          Prior = rep(c("Prior1", "Prior2"), each = length(prior_b_sd)))
+```
+
+### Plot
+
+```{r}
+label_format <- function(x) {
+  sapply(x, function(value) {
+    if (value < 1) {
+      return(paste0("1/", format(1 / value, digits = 2)))
+    } else {
+      return(as.character(value))
+    }
+  })
+}
+# Annahmen für die Priors und den Bayes-Faktor (Beispielwerte)
+#priors <- c(0.01, 0.1, 0.5, 1, 2, 5, 10, 15)
+#bayes_factor <- c(0.1, 0.5, 1, 5, 10, 50, 100, 6000)
+#bayes_factor_2 <- c(40, 50, 60, 2000, 4, 5, 20, 100)
+
+# Erstelle einen Tibble mit den Daten
+#BFs <- tibble::tibble(beta_sd = rep(priors, 2), BF = c(bayes_factor, bayes_factor_2), 
+#                      Prior = rep(c("Prior1", "Prior2"), each = length(priors)))
+
+# Erstelle den Plot mit ggplot2
+plot_dis <- ggplot(BFs_dis, aes(x = beta_sd, y = BF_dis, color = Prior)) +
+  geom_line() +  # Linie zeichnen
+  geom_point() +
+  scale_y_log10(
+    limits = c(0.01, max(BFs_dis$BF_dis)),  # Begrenzung der y-Achse
+    breaks = c(0.01, 1/30, 0.1, 1/3, 1, 3, 10, 30, 100, 1000, 10000),  # Achsenbeschriftungen
+    labels = label_format
+  ) +  # Logarithmische y-Achse
+  labs(x = "SD of beta", y = "Bayes Factor", title = "Bayes Factor in Abhängigkeit vom Prior für beta") +
+  theme_bw() + 
+  geom_hline(yintercept = 1, linetype = "dashed", size = 1) +
+  scale_color_manual(values = c("Prior1" = "blue", "Prior2" = "red"))
+
+# Zeige den Plot an
+print(plot_dis)
 
 ```
 
