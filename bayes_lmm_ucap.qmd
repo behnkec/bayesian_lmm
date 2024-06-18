@@ -216,7 +216,7 @@ mcmc_dens(mod_bayes_ri_rs_dis, pars = variables(mod_bayes_ri_rs_dis)[1:7])
 
 ### Prior predictive Checks
 
-Prior 1 (principled?)
+#### Prior 1 (principled?)
 
 ```{r}
 mod_prior_1 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
@@ -239,20 +239,26 @@ pp_check(mod_prior_1, ndraws = 100, type = "stat", stat = "max")
 ```
 
 
-Prior 2 
+####Prior 5 
 
 ```{r}
-mod_prior_2 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
+mod_prior_5 <- brm(N2 ~ 1 + n_b + (1 + n_b || participant_id),
                    data = trials, 
-                   prior = prior_2,
+                   prior = prior_5,
                    family = gaussian(),
                    sample_prior = "only",
                    ) 
 ```
 
 ```{r}
-summary(mod_prior_2)
-plot(mod_prior_2)
+summary(mod_prior_5)
+plot(mod_prior_5)
+```
+```{r}
+pp_check(mod_prior_5, ndraws = 11, type = "hist")
+pp_check(mod_prior_5, ndraws = 100, type = "stat", stat = "mean")
+pp_check(mod_prior_5, ndraws = 100, type = "stat", stat = "min")
+pp_check(mod_prior_5, ndraws = 100, type = "stat", stat = "max")
 ```
 
 
