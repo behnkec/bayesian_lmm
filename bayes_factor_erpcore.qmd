@@ -15,6 +15,7 @@ library(dplyr)
 library(bridgesampling)
 library(scales)
 library(parallel)
+library(tictoc)
 
 options(mc.cores = 4)
 ```
@@ -96,6 +97,8 @@ mod_erpcore_cor_bf_0 <- brm(N170 ~ 1 + (1 + f_c | participant_id),
                             save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
                             family = gaussian())
 ```
+
+Model 1 ...
 
 Compute marginal log likelihood
 
@@ -209,7 +212,7 @@ mLL_null_cor_2 <- bridge_sampler(mod_erpcore_cor_bf_0_2, silent = TRUE)
 prior_b_sd <- c(1, 1.5, 2, 2.5, 5, 8, 10, 15, 20, 40, 50, 100)
 
 BF_cor_1 <- c()
-BF_cor_2 <- c()
+
 
 fit_model_bf <- function(pbsd) {
   
@@ -232,54 +235,65 @@ fit_model_bf <- function(pbsd) {
   
   mLL_linear_cor_1 <- bridge_sampler(mod_cor_1, silent = TRUE)
   
-  BF_cor_1 <- c(BF_cor_1, bayes_factor(mLL_linear_cor_1, mLL_null_cor_1)$bf)
+  BF_1 <- bayes_factor(mLL_linear_cor_1, mLL_null_cor_1)$bf
   
-  return(BF_cor_1)
+  return(BF_1)
 }
 
-tic()
-BF_par <- mclapply(c(1,2), fit_model_bf, mc.cores = 2)
-toc()
+#tic()
+#BF_par <- mclapply(c(1,2), fit_model_bf, mc.cores = 2)
+#toc()
 
 tic()
-BF <- lapply(c(1,2), fit_model_bf)
+BF_cor_1 <- lapply(prior_b_sd, fit_model_bf)
 toc()
 
-cl <- makeCluster(2)
+BF_cor_1_num <- unlist(BF_cor_1)
 
-mclapply(c(1,2), print, mc.cores=2)
+#BF_cor_1 <- BF
+
+#cl <- makeCluster(2)
+
+#mclapply(c(1,2), print, mc.cores=2)
 
 ```
 
 ```{r}
-for (i in 1:length(prior_b_sd)) {
+BF_cor_2 <- c()
+
+fit_model_bf_2 <- function(pbsd) {
   
-  pbsd <- prior_b_sd[i]
+  print(paste("Fitting model for prior", pbsd))
   
   mod_cor_2 <- brm(N170 ~ 1 + f_c + (1 + f_c | participant_id),
                    data = trials_cond, 
                    prior = c(prior(normal(0, 20), class = Intercept),
-                             set_prior(paste0("normal(0,", pbsd, ")"), class = b, coef = f_cface),
-                             prior(normal(0, log(100)), class = Intercept, dpar = sigma),
-                             prior(normal(0, 10), class = sd, group = participant_id, dpar = sigma), 
+                             set_prior(paste0("normal(0,", pbsd, ")"), class = "b", coef = "f_cface"),
+                             prior(normal(0, 100), class = sigma), 
                              prior(normal(0, 40), class = sd, coef = Intercept, group = participant_id),  
                              prior(normal(0, 40), class = sd, coef = f_cface, group = participant_id), 
                              prior(lkj(1), class = cor, group = participant_id)),
                    warmup = 2000,
                    iter = 20000,
-                   cores = 4, # within-chain parallelization: CPU_tot = cores * chains
+                   #cores = 1, # within-chain parallelization: CPU_tot = cores * chains
                    control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
                    save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
                    family = gaussian())
   
   mLL_linear_cor_2 <- bridge_sampler(mod_cor_2, silent = TRUE)
   
-  BF_cor_2 <- c(BF_cor_2, bayes_factor(mLL_linear_cor_2, mLL_null_cor_2)$bf)
+  BF_2 <- bayes_factor(mLL_linear_cor_2, mLL_null_cor_2)$bf
+  
+  return(BF_2)
 }
 
+BF_cor_2 <- lapply(prior_b_sd, fit_model_bf_2)
 
-BFs_cor <- tibble::tibble(beta_sd = rep(prior_b_sd, 2), BF_cor = c(BF_cor_1, BF_cor_2), 
-                          Prior = rep(c("Prior1", "Prior2"), each = length(prior_b_sd)))
+BF_cor_2_num <- unlist(BF_cor_2)
+
+BFs_cor <- tibble::tibble(beta_sd = rep(prior_b_sd, 2), BF_cor = c(BF_cor_1_num, BF_cor_2_num), 
+                          Prior = rep(c("Prior 1", "Prior 2"), each = length(prior_b_sd)))
+
 ```
 
 ### Plot
@@ -367,9 +381,9 @@ prior_b_sd <- c(1, 1.5, 2, 2.5, 5, 8, 10, 15, 20, 40, 50, 100)
 BF_dis_1 <- c()
 BF_dis_2 <- c()
 
-for (i in 1:length(prior_b_sd)) {
+fit_model_bf_1_dis <- function(pbsd) {
   
-  pbsd <- prior_b_sd[i]
+  print(paste("Fitting model for prior", pbsd))
   
   mod_dis_1 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
                    data = trials_cond, 
@@ -390,11 +404,15 @@ for (i in 1:length(prior_b_sd)) {
   mLL_linear_dis_1 <- bridge_sampler(mod_dis_1, silent = TRUE)
   
   BF_dis_1 <- c(BF_dis_1, bayes_factor(mLL_linear_dis_1, mLL_null_dis_1)$bf)
+  
+  return(BF_dis_1)
 }
 
-for (i in 1:length(prior_b_sd)) {
+BF_dis_1 <- lapply(prior_b_sd, fit_model_bf_1_dis)
+
+fit_model_bf_2_dis <- function(pbsd) {
   
-  pbsd <- prior_b_sd[i]
+  print(paste("Fitting model for prior", pbsd))
   
   mod_dis_2 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
                    data = trials_cond, 
@@ -415,7 +433,11 @@ for (i in 1:length(prior_b_sd)) {
   mLL_linear_dis_2 <- bridge_sampler(mod_dis_2, silent = TRUE)
   
   BF_dis_2 <- c(BF_dis_2, bayes_factor(mLL_linear_dis_2, mLL_null_dis_2)$bf)
+  
+  return(BF_dis_2)
 }
+
+BF_dis_2 <- lapply(prior_b_sd, fit_model_bf_2_dis)
 
 
 BFs_dis <- tibble::tibble(beta_sd = rep(prior_b_sd, 2), BF_dis = c(BF_dis_1, BF_dis_2), 

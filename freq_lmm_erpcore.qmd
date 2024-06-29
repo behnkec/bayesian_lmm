@@ -16,7 +16,7 @@ library(papaja)
 ```
 
 ```{r}
-trials_erpcore <- read_csv("output_ucap/trials.csv")
+trials_erpcore <- read_csv("output_erpcore/trials.csv")
 head(trials_erpcore)
 ```
 

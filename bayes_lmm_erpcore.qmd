@@ -12,6 +12,7 @@ library(readr)
 library(bayesplot)
 library(ggplot2)
 library(dplyr)
+library(rstan)
 
 options(mc.cores = 4)
 ```
@@ -63,6 +64,11 @@ mod_erpcore_ri_rs_1 <- brm(N170 ~ 1 + f_c + (1 + f_c || participant_id),
 summary(mod_erpcore_ri_rs_1)
 # mcmc_dens gives density plots of posterior distribution
 mcmc_dens(mod_erpcore_ri_rs_1, pars = variables(mod_erpcore_ri_rs_1)[1:5])
+
+stanfit <- mod_erpcore_ri_rs_1$fit
+
+# Plot traceplot including the warm-up phase
+traceplot(stanfit, inc_warmup = TRUE, pars = variables(mod_erpcore_ri_rs_1)[1:5])
 ```
 
 ```{r}
@@ -151,8 +157,9 @@ mod_erpcore_prior_1 <- brm(N170 ~ 1 + f_c + (1 + f_c || participant_id),
 ```
 
 ```{r}
-pp_check(mod_erpcore_prior_1, ndraws = 11, type = "hist")
+pp_check(mod_erpcore_prior_1, ndraws = 15, type = "hist")
 pp_check(mod_erpcore_prior_1, ndraws = 100, type = "stat", stat = "mean")
+
 ```
 
 
@@ -199,13 +206,6 @@ pp_check(mod_erpcore_prior_dis, ndraws = 100, type = "stat", stat = "mean")
 pp_check(mod_erpcore_prior_dis, ndraws = 100, type = "stat", stat = "min")
 pp_check(mod_erpcore_prior_dis, ndraws = 100, type = "stat", stat = "max")
 ```
-```{r}
-pp_check(mod_erpcore_prior_dis,
-          type = "dens_overlay_grouped",
-          ndraws = 100,
-          group = "participant_id")
-```
-
 
 ## Posterior predictive check
 
@@ -248,7 +248,7 @@ pp_check(mod_erpcore_ri_rs_dis,
 ```
 
 ```{r}
-pp_check(mod_erpcore_ri_rs_dis,
+pp_check(mod_erpcore_ri_rs_cor,
          type = "stat_grouped",
          ndraws = 1000,
          group = "participant_id",

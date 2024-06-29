@@ -1,0 +1,155 @@
+---
+title: "Distributional model for the ERP CORE data set"
+format: html
+editor: visual
+---
+
+```{r}
+library(brms)
+library(readr)
+library(bayesplot)
+library(ggplot2)
+library(dplyr)
+library(rstan)
+```
+
+
+## Priors
+
+### 1
+
+```{r}
+prior_0dis_1 <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                  prior(normal(0, 10), class = b, coef = f_cface), # grand beta
+                  prior(normal(0, log(50)), class = Intercept, dpar = sigma),
+                  prior(normal(0, 5), class = sd, group = participant_id, dpar = sigma), 
+                  prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                  prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), # between person variation in slope
+                  prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+### 2
+
+```{r}
+prior_0dis_2 <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                  prior(normal(0, 10), class = b, coef = f_cface), # grand beta
+                  prior(normal(0, log(2)), class = Intercept, dpar = sigma),
+                  prior(normal(0, 1), class = sd, group = participant_id, dpar = sigma), 
+                  prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                  prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), # between person variation in slope
+                  prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+
+## Model
+
+```{r}
+mod_erpcore_ri_rs_dis <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
+                             data = trials_cond, 
+                             prior = prior_0dis_2,
+                             family = gaussian()) # default
+```
+
+
+```{r}
+summary(mod_erpcore_ri_rs_dis)
+# mcmc_dens gives density plots of posterior distribution
+mcmc_dens(mod_erpcore_ri_rs_dis, pars = variables(mod_erpcore_ri_rs_dis)[1:7])
+```
+
+
+## Prior predictive Checks
+
+```{r}
+get_prior(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ (1 | participant_id)),
+                             data = trials_cond)
+```
+
+
+### Prior 2
+
+```{r}
+mod_erpcore_prior_dis <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ (1 | participant_id)),
+                             data = trials_cond, 
+                             prior = prior_0dis_2,
+                             family = gaussian(),
+                             sample_prior = "only")
+```
+
+```{r}
+summary(mod_erpcore_prior_dis)
+plot(mod_erpcore_prior_dis)
+```
+
+```{r}
+pp_check(mod_erpcore_prior_dis, ndraws = 11, type = "hist")
+pp_check(mod_erpcore_prior_dis, ndraws = 100, type = "stat", stat = "mean")
+pp_check(mod_erpcore_prior_dis, ndraws = 100, type = "stat", stat = "min")
+pp_check(mod_erpcore_prior_dis, ndraws = 100, type = "stat", stat = "max")
+```
+
+```{r}
+pp_check(mod_erpcore_prior_dis,
+         type = "stat_grouped",
+         ndraws = 1000,
+         group = "participant_id",
+         stat = "sd",
+         #facet_args = list(scales = "fixed")
+         )
+```
+
+## Bayes Factor
+
+Model 1
+
+```{r}
+mod_erpcore_dis_bf_3 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
+                            data = trials_cond, 
+                            prior = prior_0dis_2,
+                            warmup = 2000,
+                            iter = 20000,
+                            control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                            save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                            family = gaussian(),
+                            cores = 4)
+```
+
+Model 0 (without fixed effect of faces vs. cars)
+
+```{r}
+mod_erpcore_dis_bf_2 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
+                            data = trials_cond, 
+                            prior = prior_0dis_2[prior_0dis$class != "b", ],
+                            warmup = 2000,
+                            iter = 20000,
+                            control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                            save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                            family = gaussian(),
+                            cores = 4)
+```
+
+Compute marginal log likelihood
+
+```{r}
+margLogLik_linear_dis <- bridge_sampler(mod_erpcore_dis_bf_3, silent = TRUE)
+margLogLik_null_dis <- bridge_sampler(mod_erpcore_dis_bf_2, silent = TRUE)
+```
+
+Compute Bayes Factor
+
+```{r}
+(BF_dis <- bayes_factor(margLogLik_linear_dis, margLogLik_null_dis))
+```
+
+Prior 2 for b N(0,10) -\> Estimated Bayes factor in favor of x1 over x2: 0.04068
+
+Prior 2 for b N(0,2) -\> Estimated Bayes factor in favor of x1 over x2: 0.13738
+
+
+## Vergleich Correlation Model vs Distributional Regression
+
+```{r}
+(BF_cor <- bayes_factor(margLogLik_linear, margLogLik_linear_dis))
+```
+
+Estimated Bayes factor in favor of x1 over x2: 0.00000
