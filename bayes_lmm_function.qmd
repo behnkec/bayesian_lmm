@@ -1,0 +1,44 @@
+---
+title: "bayes_lmm_function"
+format: html
+editor: visual
+---
+
+## Load packages and data set
+
+```{r}
+library(brms)
+library(readr)
+library(bayesplot)
+library(ggplot2)
+library(dplyr)
+library(rstan)
+library(bridgesampling)
+```
+
+
+## Correlation Model
+
+### Set prior
+
+```{r}
+prior <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                prior(normal(0, 10), class = b, coef = n_bnormal), # grand beta
+                prior(normal(0, 50), class = sigma), # within person variation
+                prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                prior(normal(0, 20), class = sd, coef = n_bnormal, group = participant_id), # between person variation in slope
+                prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+### Function
+
+```{r}
+fit <- function(erp, prior,  ) {
+  
+}
+```
+
+
+## Distributional model
+
+
