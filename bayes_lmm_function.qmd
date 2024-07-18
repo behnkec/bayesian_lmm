@@ -6,7 +6,7 @@ editor: visual
 
 ## Load packages and data set
 
-```{r}
+```{r, error=FALSE}
 library(brms)
 library(readr)
 library(bayesplot)
@@ -23,22 +23,86 @@ library(bridgesampling)
 
 ```{r}
 prior <- c(prior(normal(0, 10), class = Intercept), # grand mean
-                prior(normal(0, 10), class = b, coef = n_bnormal), # grand beta
-                prior(normal(0, 50), class = sigma), # within person variation
-                prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
-                prior(normal(0, 20), class = sd, coef = n_bnormal, group = participant_id), # between person variation in slope
-                prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+           prior(normal(0, 10), class = b, coef = n_bnormal), # grand beta
+           prior(normal(0, 50), class = sigma), # within person variation
+           prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+           prior(normal(0, 20), class = sd, coef = n_bnormal, group = participant_id), # between person variation in slope
+           prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
 ```
 
 ### Function
 
+Data set in the form of 
+
+erp should be the name of the DV as string
+
+prior is a vector that specifies the sd of the normal distribution of each prior
+
+id = grouping factor (as string)
+
+fixed effect as string
+
 ```{r}
-fit <- function(erp, prior,  ) {
+prior_sd <- c(10,10,50,20,20,2)
+
+```
+
+
+```{r}
+fit_car <- function(erp, prior_sd, data, fixed_effect, id) {
+  
+  prior <- c(set_prior(paste0("normal(0,", prior_sd[1], ")"), class = "Intercept"), # grand mean
+             set_prior(paste0("normal(0,", prior_sd[2], ")"), class = "b", coef = paste0(fixed_effect, data[1, paste0(fixed_effect)])), 
+             set_prior(paste0("normal(0,", prior_sd[3], ")"), class = "sigma"),
+             set_prior(paste0("normal(0,", prior_sd[4], ")"), class = "sd", coef = "Intercept", group = paste0(id)), 
+             set_prior(paste0("normal(0,", prior_sd[5], ")"), class = "sd", coef = paste0(fixed_effect, data[1, paste0(fixed_effect)]), group = paste0(id)), 
+             set_prior(paste0("lkj(", prior_sd[6], ")"), class = "cor", group = paste0(id)))
+  
+  formula <- as.formula(paste(erp, " ~ 1 +", fixed_effect, " + (1 + ", fixed_effect, " | ", id, ")"))
+  
+  mod <- brm(formula,
+             data = data, 
+             prior = prior,
+             family = gaussian(),
+             sample_prior = "only")
+  
+  assign(paste("mod", erp, "cor", sep = "_"), mod)
   
 }
 ```
 
+```{r}
+fit_face <- function(erp, prior_sd, data, fixed_effect, id) {
+  
+  prior <- c(set_prior(paste0("normal(0,", prior_sd[1], ")"), class = "Intercept"), # grand mean
+             set_prior(paste0("normal(0,", prior_sd[2], ")"), class = "b", coef = paste0(fixed_effect, "face")), 
+             set_prior(paste0("normal(0,", prior_sd[3], ")"), class = "sigma"),
+             set_prior(paste0("normal(0,", prior_sd[4], ")"), class = "sd", coef = "Intercept", group = paste0(id)), 
+             set_prior(paste0("normal(0,", prior_sd[5], ")"), class = "sd", coef = paste0(fixed_effect, "face"), group = paste0(id)), 
+             set_prior(paste0("lkj(", prior_sd[6], ")"), class = "cor", group = paste0(id)))
+  
+  formula <- as.formula(paste(erp, " ~ 1 +", fixed_effect, " + (1 + ", fixed_effect, " | ", id, ")"))
+  
+  mod <- brm(formula,
+             data = data, 
+             prior = prior,
+             family = gaussian(),
+             sample_prior = "only")
+  
+  assign(paste("mod", erp, "cor", sep = "_"), mod)
+  
+}
+```
 
 ## Distributional model
 
+```{r}
+prior_dis <- c(prior(normal(0, 10), class = Intercept), # grand mean
+               prior(normal(0, 10), class = b, coef = f_cface), # grand beta
+               prior(normal(0, log(50)), class = Intercept, dpar = sigma),
+               prior(normal(0, 5), class = sd, group = participant_id, dpar = sigma), 
+               prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+               prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), # between person variation in slope
+               prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
 
