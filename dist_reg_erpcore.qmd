@@ -32,7 +32,19 @@ prior_0dis_1 <- c(prior(normal(0, 10), class = Intercept), # grand mean
 ```{r}
 prior_0dis_2 <- c(prior(normal(0, 10), class = Intercept), # grand mean
                   prior(normal(0, 10), class = b, coef = f_cface), # grand beta
-                  prior(normal(0, log(2)), class = Intercept, dpar = sigma),
+                  prior(normal(0, log(5)), class = Intercept, dpar = sigma),
+                  prior(normal(0, 2), class = sd, group = participant_id, dpar = sigma), 
+                  prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                  prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), # between person variation in slope
+                  prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+### 3
+
+```{r}
+prior_0dis_3 <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                  prior(normal(0, 10), class = b, coef = f_cface), # grand beta
+                  prior(normal(0, log(3)), class = Intercept, dpar = sigma),
                   prior(normal(0, 1), class = sd, group = participant_id, dpar = sigma), 
                   prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
                   prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), # between person variation in slope
@@ -44,8 +56,9 @@ prior_0dis_2 <- c(prior(normal(0, 10), class = Intercept), # grand mean
 ```{r}
 mod_erpcore_ri_rs_dis <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
                              data = trials_cond, 
-                             prior = prior_0dis_2,
-                             family = gaussian()) # default
+                             prior = prior_0dis_1,
+                             family = gaussian(), # default
+                             cores = 4) 
 ```
 
 ```{r}
@@ -61,30 +74,98 @@ get_prior(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ (1 | 
                              data = trials_cond)
 ```
 
+### Prior 1
+
+```{r}
+mod_erpcore_prior_dis_1 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ (1 | participant_id)),
+                               data = trials_cond, 
+                               prior = prior_0dis_1,
+                               family = gaussian(),
+                               sample_prior = "only",
+                               cores = 4)
+```
+
+```{r}
+summary(mod_erpcore_prior_dis_1)
+plot(mod_erpcore_prior_dis_1)
+```
+
+```{r}
+pp_check(mod_erpcore_prior_dis_1, ndraws = 11, type = "hist")
+pp_check(mod_erpcore_prior_dis_1, ndraws = 100, type = "stat", stat = "mean")
+pp_check(mod_erpcore_prior_dis_1, ndraws = 100, type = "stat", stat = "min")
+pp_check(mod_erpcore_prior_dis_1, ndraws = 100, type = "stat", stat = "max")
+```
+
+```{r}
+pp_check(mod_erpcore_prior_dis_1,
+         type = "stat_grouped",
+         ndraws = 1000,
+         group = "participant_id",
+         stat = "sd"
+         
+         #facet_args = list(scales = "fixed")
+         )
+```
+
 ### Prior 2
 
 ```{r}
-mod_erpcore_prior_dis <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ (1 | participant_id)),
-                             data = trials_cond, 
-                             prior = prior_0dis_2,
-                             family = gaussian(),
-                             sample_prior = "only")
+mod_erpcore_prior_dis_2 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ (1 | participant_id)),
+                               data = trials_cond, 
+                               prior = prior_0dis_2,
+                               family = gaussian(),
+                               sample_prior = "only",
+                               cores = 4)
 ```
 
 ```{r}
-summary(mod_erpcore_prior_dis)
-plot(mod_erpcore_prior_dis)
+summary(mod_erpcore_prior_dis_2)
+plot(mod_erpcore_prior_dis_2)
 ```
 
 ```{r}
-pp_check(mod_erpcore_prior_dis, ndraws = 11, type = "hist")
-pp_check(mod_erpcore_prior_dis, ndraws = 100, type = "stat", stat = "mean")
-pp_check(mod_erpcore_prior_dis, ndraws = 100, type = "stat", stat = "min")
-pp_check(mod_erpcore_prior_dis, ndraws = 100, type = "stat", stat = "max")
+pp_check(mod_erpcore_prior_dis_2, ndraws = 11, type = "hist")
+pp_check(mod_erpcore_prior_dis_2, ndraws = 100, type = "stat", stat = "mean")
+pp_check(mod_erpcore_prior_dis_2, ndraws = 100, type = "stat", stat = "min")
+pp_check(mod_erpcore_prior_dis_2, ndraws = 100, type = "stat", stat = "max")
 ```
 
 ```{r}
-pp_check(mod_erpcore_prior_dis,
+pp_check(mod_erpcore_prior_dis_2,
+         type = "stat_grouped",
+         ndraws = 1000,
+         group = "participant_id",
+         stat = "sd"
+         #facet_args = list(scales = "fixed")
+         )
+```
+
+### Prior 3
+
+```{r}
+mod_erpcore_prior_dis_3 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ (1 | participant_id)),
+                               data = trials_cond, 
+                               prior = prior_0dis_3,
+                               family = gaussian(),
+                               sample_prior = "only",
+                               cores = 4)
+```
+
+```{r}
+summary(mod_erpcore_prior_dis_3)
+plot(mod_erpcore_prior_dis_3)
+```
+
+```{r}
+pp_check(mod_erpcore_prior_dis_3, ndraws = 12, type = "hist", prefix = c("ppd"))
+pp_check(mod_erpcore_prior_dis_3, ndraws = 100, type = "stat", stat = "mean", prefix = c("ppd"))
+pp_check(mod_erpcore_prior_dis_3, ndraws = 100, type = "stat", stat = "min", prefix = c("ppd"))
+pp_check(mod_erpcore_prior_dis_3, ndraws = 100, type = "stat", stat = "max", prefix = c("ppd"))
+```
+
+```{r}
+pp_check(mod_erpcore_prior_dis_3,
          type = "stat_grouped",
          ndraws = 1000,
          group = "participant_id",
@@ -100,7 +181,7 @@ Model 1
 ```{r}
 mod_erpcore_dis_bf_3 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
                             data = trials_cond, 
-                            prior = prior_0dis_2,
+                            prior = prior_0dis_3,
                             warmup = 2000,
                             iter = 20000,
                             control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly

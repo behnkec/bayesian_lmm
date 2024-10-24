@@ -21,6 +21,7 @@ trials_erpcore <- read_csv("output_erpcore/trials.csv")
 ```
 
 Add column for face vs. car condition
+
 ```{r}
 trials_cond <- trials_erpcore |>
   mutate(f_c = ifelse(value >= 41, "car", "face"))
@@ -36,7 +37,6 @@ prior_0cor <- c(prior(normal(0, 10), class = Intercept), # grand mean
                 prior(normal(0, 20), class = sd, coef = f_cface, group = participant_id), # between person variation in slope
                 prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
 ```
-
 
 #### Model
 
@@ -68,11 +68,9 @@ mod_erpcore_cor_0 <- brm(N170 ~ 1 + (1 + f_c | participant_id),
 (loo_cor_0 <- loo(mod_erpcore_cor_0))
 ```
 
-
 ```{r}
 loo_compare(loo_cor_1, loo_cor_0)
 ```
-
 
 ## Cross validation for Distirbutional Regression
 
@@ -86,7 +84,6 @@ prior_0dis <- c(prior(normal(0, 10), class = Intercept), # grand mean
                 prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
 ```
 
-
 #### Model
 
 ```{r}
@@ -94,6 +91,8 @@ mod_erpcore_dis_1 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id)
                          data = trials_cond, 
                          prior = prior_0dis,
                          family = gaussian(), # default
+                         iter = 4000,
+                         warmup = 1000,
                          cores = 4) 
 ```
 
@@ -104,6 +103,8 @@ mod_erpcore_dis_0 <- brm(brmsformula(N170 ~ 1 + (1 + f_c | participant_id), sigm
                          data = trials_cond, 
                          prior = prior_0dis[prior_0cor$class != "b", ],
                          family = gaussian(), # default
+                         iter = 4000,
+                         warmup = 1000,
                          cores = 4) 
 ```
 
@@ -117,16 +118,12 @@ mod_erpcore_dis_0 <- brm(brmsformula(N170 ~ 1 + (1 + f_c | participant_id), sigm
 (loo_dis_0 <- loo(mod_erpcore_dis_0))
 ```
 
-
 ```{r}
-(loo_compare(loo_dis_1, loo_dis_0))
+(loo_comparison_dis <- loo_compare(loo_dis_1, loo_dis_0))
 ```
 
-
 ## Comparison of Correlation vs. Distributional Model
-
 
 ```{r}
 loo_compare(loo_dis_1, loo_cor_1)
 ```
-

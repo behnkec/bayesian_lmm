@@ -29,6 +29,14 @@ trials_cond <- trials_erpcore |>
 head(trials_cond)
 ```
 
+```{r}
+# Check for normality of single trial averages
+ggplot(trials_cond, aes(N170)) +
+  geom_histogram(aes(y = ..density..), fill='lightgray', col='darkgrey') +
+  stat_function(fun = dnorm, args = list(mean=mean(trials_cond$N170, na.rm = TRUE), sd=sd(trials_cond$N170, na.rm = TRUE)))
+```
+
+
 ## Baysesian LMM with Priors
 ### Priors
 
@@ -52,16 +60,15 @@ prior_02 <- c(prior(normal(0, 10), class = Intercept), # grand mean
 ### Model 1
 
 ```{r}
-
 mod_erpcore_ri_rs_1 <- brm(N170 ~ 1 + f_c + (1 + f_c || participant_id),
                            data = trials_cond, 
                            prior = prior_01,
                            family = gaussian()) # default
-
 ```
 
 ```{r}
 summary(mod_erpcore_ri_rs_1)
+posterior_summary(mod_erpcore_cor_1)
 # mcmc_dens gives density plots of posterior distribution
 mcmc_dens(mod_erpcore_ri_rs_1, pars = variables(mod_erpcore_ri_rs_1)[1:5])
 
@@ -237,6 +244,7 @@ pp_check(mod_erpcore_ri_rs_1,
 ```{r}
 pp_check(mod_erpcore_ri_rs_dis, ndraws = 11, type = "hist")
 pp_check(mod_erpcore_ri_rs_dis, ndraws = 100, type = "dens_overlay")
+plot(mod_dist, nvariables = 6)
 ```
 
 

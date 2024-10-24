@@ -185,6 +185,7 @@ mod_erpcore_cor_bf_0_1 <- brm(N170 ~ 1 + (1 + f_c | participant_id),
                                        prior(lkj(2), class = cor, group = participant_id)),
                              warmup = 2000,
                              iter = 20000,
+                             cores = 4,
                              control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
                              save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
                              family = gaussian())
@@ -200,6 +201,7 @@ mod_erpcore_cor_bf_0_2 <- brm(N170 ~ 1 + (1 + f_c | participant_id),
                                         prior(lkj(1), class = cor, group = participant_id)),
                               warmup = 2000,
                               iter = 20000,
+                              cores = 4,
                               control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
                               save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
                               family = gaussian())
@@ -228,7 +230,7 @@ fit_model_bf <- function(pbsd) {
                              prior(lkj(2), class = cor, group = participant_id)),
                    warmup = 2000,
                    iter = 20000,
-                   cores = 1, # within-chain parallelization: CPU_tot = cores * chains
+                   cores = 4, # parallelization
                    control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
                    save_pars = save_pars(all = TRUE),# precondition for performing bridge sampling
                    family = gaussian())
@@ -418,8 +420,8 @@ fit_model_bf_2_dis <- function(pbsd) {
                    data = trials_cond, 
                    prior = c(prior(normal(0, 20), class = Intercept),
                              set_prior(paste0("normal(0,", pbsd, ")"), class = b, coef = f_cface),
-                             prior(normal(0, log(100)), class = Intercept, dpar = sigma),
-                             prior(normal(0, 10), class = sd, group = participant_id, dpar = sigma), 
+                             prior(normal(0, log(5)), class = Intercept, dpar = sigma),
+                             prior(normal(0, 2), class = sd, group = participant_id, dpar = sigma), 
                              prior(normal(0, 40), class = sd, coef = Intercept, group = participant_id),  
                              prior(normal(0, 40), class = sd, coef = f_cface, group = participant_id), 
                              prior(lkj(1), class = cor, group = participant_id)),
