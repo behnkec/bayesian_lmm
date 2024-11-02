@@ -322,7 +322,7 @@ Berlin, den xx.xx.2024&\\
 \section*{Abstract}\label{abstract}
 \addcontentsline{toc}{section}{Abstract}
 
-\noindent In many disciplines Bayesian methods have become increasingly important in complementing frequentist approaches to data analysis. This tutorial attempts to provide a comprehensible and approachable introduction to the use of Bayesian Linear Mixed Models for the analysis of EEG data. The basic concepts will be explained alongside a worked-out example of an analysis in R. The main components of this approach are the implementation of single trial-based analyses of event-related potentials as Bayesian Linear Mixed Models using the R package brms. Important aspects like the elicitation of appropriate priors and the implementation of model comparison will be addressed and possible extensions of the model introduced. All this in the attempt to provide a starting point for frequentist researchers to expand to Bayesian methods.
+\noindent In many disciplines Bayesian methods have become increasingly important in complementing frequentist approaches to data analysis. This tutorial attempts to provide a comprehensible and approachable introduction to the use of Bayesian Linear Mixed Models for the analysis of EEG data. The basic concepts will be explained alongside a worked-out example of an analysis in R. The main component of this approach is the implementation of single trial-based analyses of event-related potentials as Bayesian Linear Mixed Models using the R package brms. Important aspects like the elicitation of appropriate priors and the implementation of model comparison will also be addressed and possible extensions of the model introduced. All this in the attempt to provide a starting point for frequentist researchers to expand to Bayesian methods.
 
 \emph{Keywords:} Bayesian statistics, Linear Mixed Models, EEG
 
@@ -334,7 +334,7 @@ In many disciplines Bayesian methods have become increasingly important in compl
 
 Traditionally, the nested structure of EEG data, each participants does the experiment for many trials, was analyzed with repeated measures ANOVAs. In recent years, however, linear mixed models (LMMs) became more and more popular to replace the ANOVAs (e.g., Frömer et al., 2018; Tibon \& Levy, 2015; Volpert-Esmond et al., 2021). LMMs come with several advantages over repeated measures ANOVAs, they allow for combinations of categorical and continuous variables (Frömer et al., 2018), they are more robust against unequal numbers of observations (Tibon \& Levy, 2015) and don't need the data to follow a specific variance structure for the sphericity assumption (Bagiella et al., 2000). LMMs also directly take into account individual differences between the participants. All of these advantages as well as advances in statistical software made LMMs the new state of the art in the analysis of psychophysiological data.
 
-The use of Bayesian linear mixed models (BLMMs) makes it possible to keep all the advantages from frequentist LMMs while at the same time including the benefits of Bayesian methods. BLMMs are a flexible way to analyze nested data that allow the researcher to incorporate prior knowledge and quantify the uncertainty of the estimation (Bürkner, 2018; Kruschke, 2021). The purpose of this tutorial is to provide an accessible introduction to Bayesian Linear Mixed Models in the context of EEG data analysis and address frequently raised concerns about Bayesian methods.
+The use of Bayesian linear mixed models (BLMMs) makes it possible to keep all the advantages from frequentist LMMs while at the same time including the benefits of Bayesian methods. BLMMs are a flexible way to analyze nested data that allow the researcher to incorporate prior knowledge and quantify the uncertainty of the estimation (Bürkner, 2018; Kruschke, 2021; \textbf{wagenmakers\_etal18?}). The purpose of this tutorial is to provide an accessible introduction to Bayesian Linear Mixed Models in the context of EEG data analysis and address frequently raised concerns about Bayesian methods.
 
 \section{Using Bayesian Linear Mixed Models to Analyze Single Trial EEG Data}\label{using-bayesian-linear-mixed-models-to-analyze-single-trial-eeg-data}
 
@@ -350,7 +350,7 @@ In addition to the N170 component, the analyses were also performed for the N2 c
 
 \subsection{Frequentist Linear Mixed Models}\label{frequentist-linear-mixed-models}
 
-To provide a reference, we will start by performing the analysis with a frequentist linear mixed model. LMMs, also called multilevel models or mixed-effects models, are extensions of the general linear model (GLM) that additionally estimate random effects. They are used in situations, where the data have a nested or hierarchical structure and would violate the assumption of independent error terms in a standard linear regression. This is often the case in cognitive psychology when participants are presented with multiple stimuli. The same participant will do the experiment for several trials and these trials will therefore be more similar to each other than trials between participants. Each trial will not only be influenced by the experimental condition but also by individual differences between participants. The LMMs account for these individual differences by additionally estimating random effects. In contrast to fixed effects that are estimated in the GLM as well as in LMMs and generalize over the population, random effects estimate how much the intercept and/or slope of the regression varies between participants. If e.g.~the intercept is allowed to be random, that means that the intercept of every participant consists not only of the overall intercept but also an individual deviation of it.
+To provide a reference, we will start by performing the analysis with a frequentist linear mixed model. LMMs, also called multilevel models or mixed-effects models, are extensions of the general linear model (GLM) that additionally estimate random effects. They are used in situations, where the data have a nested or hierarchical structure and would violate the assumption of independent error terms in a standard linear regression. This is often the case in cognitive psychology when participants are presented with multiple stimuli. The same participant will do the experiment for several trials and these trials will therefore be more similar to each other than trials between participants. Each trial will not only be influenced by the experimental condition but also by individual differences between participants. The LMMs account for these individual differences by additionally estimating random effects. In contrast to fixed effects that are estimated in the GLM as well as in LMMs and generalize over the population, random effects estimate how much the intercept and/or slope of the regression varies between participants. If e.g.~the intercept is allowed to be random, that means that the intercept of every participant consists not only of the overall intercept but also an individual deviation of it. For a more detailed introduction to using LMMs see Brown (2021) or Brauer and Curtin (2018).
 
 In a basic form, LMMs include random effects only for the participants. However one could also add random effects for the items (or channels) as so called crossed random effects as described in Baayen et al. (2008). For reasons of simplicity and because item effects of pictures are usually small compared to the fixed effects and participant effects, in the present tutorial only random effects for participants will be included. However, it is important to note that setting up a sensible model and determining what random effects to include is a separate substantial issue and ongoing debate (see Barr et al., 2013; Bates et al., 2018; Matuschek et al., 2017).
 
@@ -532,7 +532,7 @@ The output is structured similarly to the output of a frequentist model. At the 
 
 Next, the output gives us the estimated posterior distributions of the random effects and the correlation between them. In Bayesian analyses, typically the entire distribution is used for inference. For a comparison with the frequentist model however, we can also look at the point estimates. For the random effects the point estimates of the standard deviation are very similar to what we have seen before. The sd of the random intercept was \(sd_0 =\) 4.33 (compared to \(sd_0 =\) \texttt{4.129}) and the sd of the random slope was \(sd_1 =\) 1.59 (compared to \(sd_1 =\) \texttt{1.529}) with a correlation of \(r =\) 0.07 (compared to \(r =\) \texttt{0.07}). We will ignore the rear columns of all the estimates for now. They contain convergence diagnostics and we will describe how to interpret them in section 2.6. Below the random effects are the fixed effects. Again, we can compare the point estimates to the frequentist model and notice a great similarity. When participants were presented with faces the amplitude of the N170 component was more negative, \(b_1\) = -1.76 (compared to \(b_1 =\) -1.76). What is new in the Bayesian summary is an estimate of sigma, the sd of the posterior normal distribution of the N170, at the end of the output. Here, the estimated sigma was \(\sigma =\) 7.06.
 
-Finally, we can visualize the posterior distributions of the parameters of interest using the \texttt{plot} function (see Fig. \ref{fig:plot-blmm}). This allows for an overview of the entire posterior distribution and should always be part of a Bayesian analysis. The posterior distributions of our parameters give us information not only about the mean (or point estimate) of the distribution, but also the scale and shape as well as the range of the distribution. These help to better assess the model in its entirety. The \texttt{plot} function also outputs so called trace plots. The trace plots are a first indicator of the goodness of convergence (i.e.~if the algorithm used to compute the posterior distribution worked correctly). They should ideally be a straight hose around the mean of the estimation and should not have outliers.
+Finally, we can visualize the posterior distributions of the parameters of interest using the \texttt{plot} function (see Fig. \ref{fig:plot-blmm}). This allows for an overview of the entire posterior distribution and should always be part of a Bayesian analysis. The posterior distributions of our parameters give us information not only about the mean (or point estimate) of the distribution, but also the scale and shape as well as the range of the distribution. These help to better assess the model in its entirety. Posterior distributions provide us not only with a point estimate of the parameter but more importantly quantify the uncertainty around our estimation. The \texttt{plot} function also outputs so called trace plots. The trace plots are a first indicator of the goodness of convergence (i.e.~if the algorithm used to compute the posterior distribution worked correctly). They should ideally be a straight hose around the mean of the estimation and should not have outliers.
 
 
 
@@ -550,19 +550,17 @@ Finally, we can visualize the posterior distributions of the parameters of inter
 
 \subsection{Prior Elicitation}\label{prior-elicitation}
 
-Probably the most frequently asked question about Bayesian statistics is how to determine the priors. For researchers with a frequentist background this often seems like a daunting task with a lot of subjectivity. However, while it does increase the researchers degrees of freedom and remains a difficult task even for expert statisticians, there are some paths you can follow to find appropriate priors. As we have seen in Section 2.3, prior distributions encode the knowledge about the parameters before seeing the data. Ideally prior distributions should therefore be elicited with no knowledge of the collected data incorporating only the available information before the measurement (Gelman et al., 2017). In the prior elicitation we are trying to translate this already available domain knowledge into probability distributions (Mikkola et al., 2023). In this process There are different approaches priors we choose can have different characteristics, depending on the approach In the following analysis we will be using so called principled priors (Nicenboim et al., n.d., para. 3.4). Principled priors encode all the theory-neutral information. In our case that means all the information about ERPs and EEG data in general, but not for example the direction of the N170 effect. To acquire this domain knowledge typically a mix of several sources of information is used, ones own experience, previous experiments, meta-analyses, expert knowledge, anything that can be ruled out by logic or invariances (Lee \& Vanpaemel, 2018; Nicenboim et al., n.d.). It also always useful to perform the analyses with more than one prior to reduce the influence of biases.
+Probably the most frequently asked question about Bayesian statistics is how to determine the priors. For researchers with a frequentist background this often seems like a daunting task with a lot of subjectivity. However, while it does increase the researchers degrees of freedom and remains a difficult task even for expert statisticians, there are some paths you can follow to find appropriate priors. As we have seen in Section 2.3, prior distributions encode the knowledge about the parameters before seeing the data. Ideally prior distributions should therefore be elicited with no knowledge of the collected data incorporating only the available information before the measurement (Gelman et al., 2017). In the prior elicitation we are trying to translate this already available domain knowledge into probability distributions (Mikkola et al., 2023). There are different approaches to it and the priors we choose can have different characteristics, depending on the approach. In the following analysis we will be using so called principled priors (Nicenboim et al., n.d., para. 3.4). Principled priors encode all the theory-neutral information. In our case that means all the information about ERPs and EEG data in general, but not for example the direction of the N170 effect. To acquire this domain knowledge typically a mix of several sources of information is used, ones own experience, previous experiments, meta-analyses, expert knowledge, anything that can be ruled out by logic or invariances (Lee \& Vanpaemel, 2018; Nicenboim et al., n.d.). It also always useful to perform the analyses with more than one prior to reduce the influence of biases on the final results.
 
-Looking back to our model from section 2.3 we can see, that we need priors for six different parameters, the fixed intercept \(\beta_0\), the fixed slope \(\beta_1\), the variance component of the random intercept and random slope \(\tau_0\) and \(\tau_1\), the within subject variance component \(\sigma\) and the correlation between random intercept and random slope \(\rho_u\). For each parameter we will briefly look at what we already know about this parameter and how this can be translated in a probability distribution. In the present tutorial the elicitation process will be kept very short, only to demonstrate the concept. In an actual analysis this is a very important step before analyzing the data and should be done thoroughly. We will be using normal distributions for all priors except the correlation (see Sec. 2.3).
+Looking back to our model from section 2.3 we can see, that we need priors for six different parameters, the fixed intercept \(\beta_0\), the fixed slope \(\beta_1\), the variance component of the random intercept and random slope \(\tau_0\) and \(\tau_1\), the within subject variance component \(\sigma\) and the correlation between random intercept and random slope \(\rho_u\). For each parameter we will briefly look at what we already know about this parameter and how this can be translated in a probability distribution. In the present tutorial the elicitation process is kept short, only to demonstrate the concept. In an actual analysis this is a very important step before analyzing the data and should be done thoroughly. We will be using normal distributions for all priors except the correlation (see Sec. 2.3).
 
 For the fixed intercept we will take most of our information from the preprocessing steps. During preprocessing, the data were rereferenced to average, for each epoch the average voltage of the entire time window was then subtracted from all time points of the epoch at every channel and epochs were be rejected if the peak-to-peak amplitude exceeded 200 \(\mu\)V. Finally, every single data point of the analysis is the average at the region of interest over a specific time window. All of these processing steps result in the single trial average being shifted closer to zero. So, independent of what ERP component we are looking at, we will expect the mean amplitude to some \(\mu V\) around zero. Additionally, looking at mean amplitudes from different ERP effects and more specifically the N170, almost all of them are smaller than 10 \(\mu V\) (e.g. Kappenman et al., 2021; \textbf{nan\_etal22?}). This is why we will be using a prior of \(N(0, 10)\), placing the bulk of the distribution between -10 and 10 \(\mu V\) while at the same time allowing for wider range if necessary.
 
-The fixed slope represents our main experimental effect, the difference between seeing faces and seeing cars in the N170. Generally, ERP effects are only a couple of \(\mu V\) big {[}e.g. Frömer et al. (2018); Kappenman et al. (2021); xxx{]} even with large effects like the N400 (\textbf{nieuwland\_etal18?}). As this also holds for the N170 {[}e.g. (\textbf{itier\_taylor04?}); xxx{]} we will set the prior to \(N(0, 10)\)
+The fixed slope represents our main experimental effect, the difference between seeing faces and seeing cars in the N170. Generally, ERP effects are only a couple of \(\mu V\) big (Frömer et al., 2018; Kappenman et al., 2021; e.g. \textbf{enge\_etal23?}) even with large effects like the N400 (\textbf{nieuwland\_etal18?}). As this also holds for the N170 (e.g. \textbf{itier\_taylor04?}) we will set the prior to \(N(0, 10)\). This again places the bulk of the distribution between -10 and 10 \(\mu V\), which represents our expectations, while still allowing for slopes outside that range.
 
-As EEG random intercept and slope
-together; papers -\textgreater{} little evidence, wide prior
+As EEG random intercept and slope are only rarely reported, we have little information to go on. From Frömer et al. (2018) we would say the sd of the random effects are rather small, but this could of course be unique to their study. Therefore will be using a wider prior to allow for other possibilities. As the sd is always positive, we will use a truncated normal distribution \(N_+(0, 20)\)
 
-The \(\sigma\) represents the within person variance for all participants. because between person variance is reduced through averaging.
-within person variance, even less evidence, wider prior, mean sd (smaller than possible sd, but wider range)
+The \(\sigma\) represents the within person variance, which is assumed to be the same for all participants. As we cannot rely on previous Bayesian analysis of EEG data we don't habe any information on how the prior for sigma should look like. We only know that \(\sigma\) has to be greater than zero as it is a sd. We will also assume within person variance to be greater than between person variance because between person variance is reduced through averaging within a participant. We again use a truncated normal distribution \(N_+(0, 50)\) with a higher sd compared to the random effects. This leaves us with a very wide prior which accurately represents how little knowledge we have.
 
 For the correlation between random intercept and slope we are using an LKJ distribution (Joe, 2006; Lewandowski et al., 2009). Because the correlation is seldomely reported, we have little knowledge on what to expect it to be for our data. This is why we chose a rather uninformative prior. With a prior of \(LKJ(2)\) we express a slight preference for small correlations while the entire range of correlations (from -1 to 1) is still possible. This leaves room for different correlations and doesn't bias the analysis.
 
@@ -592,7 +590,7 @@ All of these considerations leave us with the following priors.
 
 \subsection{Prior Predictive Checks}\label{prior-predictive-checks}
 
-After deciding on a prior distribution for each parameter, it is important to confirm that we indeed set appropriate priors. One essential way to check the plausibility of the priors is to do prior predictive checks. This is a form of sensitivity analysis to investigate possible biases of the prior on the one hand and assess whether it might be to vague on the other hand. The prior predictive checks compute a posterior distribution by using only the prior and not the likelihood. This allows us to evaluate if the prior covers all the possible outcomes of our experiment. Typically, it should be a bit wider than the outcomes we would expect, to rule out any biases.
+After deciding on a prior distribution for each parameter, it is important to confirm that we indeed set appropriate priors. One essential way to check the plausibility of the priors is to do prior predictive checks. This is a form of sensitivity analysis to investigate possible biases of the prior on the one hand and assess whether it might be to vague on the other hand. The prior predictive checks compute a posterior distribution by using only the prior and not the likelihood. This allows us to evaluate if the prior covers all the possible outcomes of our experiment. Typically, it should be a bit wider than the outcomes we would expect, to rule out any biases. These checks are typically performed for several different priors to compare them.
 
 Prior predictive checks can easily be performed in R by setting the \texttt{sample\_prior} argument in the \texttt{brm} function to \texttt{"only"}.
 
@@ -640,13 +638,13 @@ For the estimation of the model parameters we need to work out the posterior dis
 
 In infinite time this algorithm would always lead to the correct posterior distribution (Roy, 2020). But of course we only have limited time resources. That is why we need to check whether the algorithm converged properly in the amount of iterations we set. We can do so by looking at some convergence criteria. The most commonly used convergence diagnostics are \(\hat{R}\) and the effective sample sizes (Vehtari et al., 2021). Roughly speaking, the \(\hat{R}\) compares the between- and within-chain variance. If the variance of all the chains put together is greater than the variance of one single chain, we assume the sampling has not worked properly. Ideally, every \(\hat{R}\) should be 1, but a good threshold seems to be that \(\hat{R}\) should not be greater than 1.01 (Vehtari et al., 2021). The effective sample size (ESS) reflects the number of independent samples that would contain the same amount of information as the set of correlated samples we get after running the MCMC algorithm (Roy, 2020). We aim for as many effective samples as possible, but at least 400 for every parameter (Vehtari et al., 2021).
 
-The summary of the \texttt{brm}-model gives us some information on the convergence of our model. If the model did not converge properly we also get a warning from Stan. The estimated \(\hat{R}\) can be found under \texttt{Rhat} and the effective sample sizes under \texttt{Bulk\_ESS} for the major part of the posterior distribution and \texttt{Tail\_ESS} for the tails. As we can see in the output of the model from section 2.3 it converged nicely. All the \(\hat{R}\) are smaller or equal to 1.01 and we have an ESS of at least 568 for every parameter. The trace plot (see Fig. \ref{fig:plot-blmm-caption}) of the model also look like we would expect, hoverung equally around the mean of each distribution.
+The summary of the \texttt{brm}-model gives us some information on the convergence of our model. If the model did not converge properly we also get a warning from Stan. The estimated \(\hat{R}\) can be found under \texttt{Rhat} and the effective sample sizes under \texttt{Bulk\_ESS} for the major part of the posterior distribution and \texttt{Tail\_ESS} for the tails. As we can see in the output of the model from section 2.3 it converged nicely. All the \(\hat{R}\) are smaller or equal to 1.01 and we have an ESS of at least 568 for every parameter. The trace plot (see Fig. \ref{fig:plot-blmm}) of the model also look like we would expect, hoverung equally around the mean of each distribution.
 
-If the sampling did not work properly there are several options to address this. First, we should check if the model is properly defined. Then, we can either use more informative (smaller) priors to constrain the sampling space or increase the number of iterations. Having said that, small deviations from the recommendations (e.g.~if the \texttt{Tail\_ESS} is only 370 for one parameter) are usually not a problem and the model fit should always be looked at as a whole.
+If the sampling did not work properly there are several options to address this (see (\textbf{gelmana?})). First, we should check if the model is properly defined. Then, we can either use more informative (smaller) priors to constrain the sampling space or increase the number of iterations. Having said that, small deviations from the recommendations (e.g.~if the \texttt{Tail\_ESS} is only 370 for one parameter) are usually not a problem and the model fit should always be looked at as a whole.
 
 \subsection{Posterior Predictive Checks}\label{posterior-predictive-checks}
 
-After computing the complete model and confirming that it converged properly, we can take look at the posterior distribution to determine its descriptive adequacy (Shiffrin et al., 2008). We want to determine if the data predicted by the model is reasonable. This is usually done via posterior predictive checks. In Sec. 2.5 we have seen, that we can draw samples from the posterior distribution of the model. We now want to assess the model's ability to predict data sets similar to our own. Although this can not be seen as good evidence for the model, an inadequacy in properly predicting similar data sets strongly speaks against the model (Shiffrin et al., 2008). Posterior predictive checks can give a first impression of the model predictions, but it should only be seen as a sanity check (Nicenboim et al., n.d.). For model comparison different criteria should be used to assess the performance of a model {[}e.g. Roberts and Pashler (2000); xxx{]}.
+After computing the complete model and confirming that it converged properly, we can take look at the posterior distribution to determine its descriptive adequacy (Shiffrin et al., 2008). We want to determine if the data predicted by the model is reasonable. This is usually done via posterior predictive checks. In Sec. 2.5 we have seen, that we can draw samples from the posterior distribution of the model. We now want to assess the model's ability to predict data sets similar to our own. Although this can not be seen as good evidence for the model, an inadequacy in properly predicting similar data sets strongly speaks against the model (Shiffrin et al., 2008). Posterior predictive checks can give a first impression of the model predictions, but it should only be seen as a sanity check (Nicenboim et al., n.d.). For model comparison different criteria should be used to assess the performance of a model {[}e.g. Roberts and Pashler (2000); xxx{]}. As for the prior predictive checks, posterior predictive checks should be done for a few different priors, to assess the influence of the prior on the posterior distribution.
 
 To perform posterior predictive checks we can again use the \texttt{pp\_check} function. Looking at Fig \ref{fig:posterior-check-blmm-hist}, the samples indeed look very similar to our observed data. The only difference seems to ba a slightly smaller standard deviation, the actual data set has a higher peak and a narrower distribution. Apart from that the model predicts data sets closely related to the observed data. For EEG experiments this will usually be the case, because we have so many data points and the prior plays a smaller role in the posterior predictive distribution.
 
@@ -847,48 +845,92 @@ Nonetheless, by performing a posterior predictive check it becomes clear that th
 
 \subsection{Hypothesis Testing}\label{hypothesis-testing}
 
-A primary goal of experiments in cognitive psychology is to test a certain theory. In frequentist analyses this is usually done using null hypothesis significance testing (NHST). NHST is a way of deciding if one theory accounts better for the observed data than another. Usually,
-When using NHST researchers will not only want to know the
-In Bayesian statistics this approach is often criticized
-Because it is standard part of the frequentist framework and almost always reported in ERP studies, the following sections will concentrate on two different approaches to NHST in Bayesian statistics, Bayes factors and cross validation. Both come with distinct advantages and drawbacks that will also be discussed. However, as mentioned before, most Bayesian statisticians would advise against dichotomous decisions and therefore these methods should always be regarded critically.
+A primary goal of experiments in cognitive psychology is usually to test a certain theory. In frequentist analyses this is mostly done using null hypothesis significance testing (NHST). NHST is a way of deciding if one theory fit the observed data better than another, usually using p-values. This approach has been criticized many times especially for producing non-replicable results (e.g. \textbf{halsey\_etal15?}; \textbf{nickerson00?}; \textbf{szucs\_ioannidis17?}). Different solutions, and especially Bayesian analyses, have been proposed to address these issues (e.g. \textbf{vandekerckhove\_etal18?}; \textbf{wagenmakers07?}). However, even these approaches are criticized by Bayesian statisticians, saying that dichotomous decisions based on a threshold per se cannot represent a complex theory (e.g. \textbf{mcshane\_etal19?}).
 
-generalization only within range of the observed data
-
-``A model that's closest to the true generating data process is not guaranteed to produce the best (prior or posterior) predictions, and a model with a clearly wrong generating data process is not guaranteed to produce poor (prior or posterior) predictions'' Nicenboim et al. (n.d.)
-
-precision of the data -\textgreater{} effect on comparison (wie viele Datenpunkte brauche ich -\textgreater{} Power???)
-
-Important to note, that credible intervals should not be used to reject or accept a null hypothesis (Wagenmakers et al. (2019)).
+Nevertheless, as it is standard part of the frequentist framework and almost always reported in ERP studies, the following sections will concentrate on two different approaches to hypothesis testing in Bayesian statistics, Bayes factors (BF) and cross validation. It is important to note, that credible intervals should not be used to reject or accept a null hypothesis (Wagenmakers et al., 2019). Bayes factors and cross validation come with distinct advantages and drawbacks that will also be discussed. However, as mentioned before, most Bayesian statisticians would advise against dichotomous decisions and therefore these methods should always be regarded critically.
 
 \subsection{Bayes Factors}\label{bayes-factors}
 
-As mentioned above Bayes Factors are one way to test hypothesis in the Bayesian framework. The BF assess how well the entire model (prior and likelihood) is able to explain the observed data set (Nicenboim et al., n.d.).
+As mentioned above Bayes Factors are one way to test hypotheses in the Bayesian framework. The BF assesses how well the entire model (prior and likelihood) is able to explain the observed data set relative to another model (Nicenboim et al., n.d.). The model under which the collected data is more likely to occur will be supported by the BF (\textbf{wagenmakers\_etal10?}). This interpretation is one that is often desired for frequentist hypothesis testing but that NHST cannot provide, one of many advantages of the BF. The BF also allows to collect evidence supporting the null hypothesis, e.g.~when an experiment aims to show the absence of an effect (\textbf{wagenmakers\_etal10?}).
 
-highly sensitive to priors
+However, the Bayes factor is also often criticized and comes with its own challenges (see Tendeiro et al., 2024; Tendeiro \& Kiers, 2019; Vehtari \& Ojanen, 2012). Most importantly, this approach to statistical inference could be seen as not truly Bayesian in the sense that it does not incorporate the entire posterior but rather facilitates a dichotomous decision. In the application, a major challenge in using Bayes factors is its high sensitivity to the prior distributions (\textbf{wagenmakers\_etal10?}). Also, computations of Bayes factor can be difficult and unstable (Tendeiro \& Kiers, 2019; \textbf{wagenmakers\_etal10?}) and the interpretation should be treated with caution (Tendeiro \& Kiers, 2019). Despite the drawbacks Bayes factors can be a useful tool in comparing models and is an improvement over classical NHST (Tendeiro \& Kiers, 2019).
 
-bridge sampling
+\subsubsection{Mathematical Model and Implementation in R}\label{mathematical-model-and-implementation-in-r-2}
 
-this approach to model comparison could also be seen as not ``truly''
-Bayesian in the sense that they rely on a point estimate of the parameter rather than incorporating
-the entire posterior.
+The Bf can be understood and computed by using the marginal likelihood. So far we have mostly ignored the marginal likelihood, which serves as the denominator in Bayes' rule. For the BF however the marginal likelihood is crucial. If we aim to compare two competing models, the BF is computed by taking the ratio of the marginal likelihoods under each model (Nicenboim et al., n.d.). In our running example we would like to test whether a model including the fixed slope (\(M_1\)), that represents the experimental effect, is more suitable than a model that does not contain that parameter or, equally, assumes it to be zero (\(M_0\)). The BF for this comparison can than be written as in Eq. \eqref{eq:bayes-factor}, by simply including the models into the equation (\textbf{gelman\_etal15?}).
 
-collecting evidence for null hypothesis -\textgreater{} pro Bayes
+\begin{equation}
+BF_{10} = \frac{p(y|M_1)}{p(y|M_0)} = \frac{\int{p(\theta_1|M_1)p(y_1|\theta_1,M_1)}d\theta_1}{\int{p(\theta_0|M_0)p(y_0|\theta_0,M_0)}d\theta_0}
+\label{eq:bayes-factor}
+\end{equation}
 
-interpretation that we often want in freq -\textgreater{} pro Bayes
+The basic idea behind the marginal likelihood is that for every possible parameter value the likelihood is weighted with the corresponding prior (Nicenboim et al., n.d.; \textbf{gelman\_etal15?}). This product is than integrated over the parameter \(\theta\), i.e.~summed over all parameter values \(\theta\). This shows that even mathematically the prior plays a vital role in the BF. A model that makes better predictions would then yield a higher marginal likelihood.
+
+To calculate the Bayes factor one then takes the ratio of the two marginal likelihoods. The BF can be interpreted as the relative evidence for the predictive performance of one model against the other (Heck et al., 2023). Specifically it tells us, by what amount the observed data is more likely to occur if one model were true compared with the other model being true. Values larger than one support the model \(M_1\), where as values smaller than one support the model \(M_0\), values close to one indicate inconclusive results. Typically, a BF over 10 or under .1 is seen as strong evidence in favor of the first or second model, respectively.
+
+For the implementation in R we will use the bridge sampling method, because it allows to compare non-nested models (e.g. \textbf{gronau\_etal17?}). Alternatively the Savage--Dickey density ratio method could also be used to compute the BF in R (e.g. \textbf{wagenmakers\_etal10?}). To get stable estimates when using bridge sampling, it is important to have a large number of effective samples (\textbf{gronau\_etal20?}). For this reason we will use a greater number of iterations (\texttt{iter\ =\ 20000}), additionally the \texttt{control} parameter is set to \texttt{list(adapt\_delta\ =\ 0.9)} to ensure the sampling process is working properly. It is also necessary to set \texttt{save\_pars\ =\ save\_pars(all\ =\ TRUE)}, this way all the parameters will be saved that are needed to be able to perform bridge sampling. With these adaptations we will run the \(M_1\) as well as the \(M_0\) model, for the \(M_0\) model the fixed slope will be excluded. In the following only the code for the null model is shown.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# exclude fixed slope beta\_1 in the formula}
+\NormalTok{blmm\_bf\_0 }\OtherTok{\textless{}{-}} \FunctionTok{brm}\NormalTok{(N170 }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{+}\NormalTok{ f\_c }\SpecialCharTok{|}\NormalTok{ participant\_id),}
+                 \AttributeTok{data =}\NormalTok{ trials\_cond, }
+                 \CommentTok{\# remove prior for beta\_1}
+                 \AttributeTok{prior =}\NormalTok{ prior\_1[prior\_1}\SpecialCharTok{$}\NormalTok{class }\SpecialCharTok{!=} \StringTok{"b"}\NormalTok{, ],}
+                 \AttributeTok{warmup =} \DecValTok{2000}\NormalTok{,}
+                 \AttributeTok{iter =} \DecValTok{20000}\NormalTok{,}
+                 \AttributeTok{cores =} \DecValTok{4}\NormalTok{,}
+                 \CommentTok{\# ensure that the sampler is working correctly}
+                 \AttributeTok{control =} \FunctionTok{list}\NormalTok{(}\AttributeTok{adapt\_delta =} \FloatTok{0.9}\NormalTok{), }
+                 \CommentTok{\# precondition for performing bridge sampling}
+                 \AttributeTok{save\_pars =} \FunctionTok{save\_pars}\NormalTok{(}\AttributeTok{all =} \ConstantTok{TRUE}\NormalTok{), }
+                 \AttributeTok{family =} \FunctionTok{gaussian}\NormalTok{())}
+\end{Highlighting}
+\end{Shaded}
+
+After setting up the two alternative models, the marginal log likelihoods are computed using the \texttt{bridge\_sample} function from the bridgesampling package (\textbf{gronau\_etal20?}). Here, the marginal log likelihoods are used because the marginal likelihoods can be very small in the multidimensional probability space used for sampling and hence can lead to numerical problems.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{margLogLik\_linear }\OtherTok{\textless{}{-}} \FunctionTok{bridge\_sampler}\NormalTok{(blmm\_bf\_1, }\AttributeTok{silent =} \ConstantTok{TRUE}\NormalTok{)}
+
+\NormalTok{margLogLik\_null }\OtherTok{\textless{}{-}} \FunctionTok{bridge\_sampler}\NormalTok{(blmm\_bf\_0, }\AttributeTok{silent =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Finally, these marginal log likelihoods are used to calculate the BF with the \texttt{bayes\_factor} (or \texttt{bf}) function also from the bridgesampling package. The null model is usually last, this way bigger numbers represent evidence for the alternative model.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{bf\_blmm }\OtherTok{\textless{}{-}} \FunctionTok{bayes\_factor}\NormalTok{(margLogLik\_linear, margLogLik\_null)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{Results}\label{results-3}
+
+For the comparison of the BLMM with and without a fixed slope the Bayes factor is \(BF_{blmm10} =\) 5,907.03. This means that the observed data are 5907 times more likely to occur if where model \(M_1\) (including the fixed slope) were true than if \(M_0\) were true. This can be interpreted as evidence for the \(M_1\). In the same way we can compare the distributional model with and without a fixed slope, which gives us a Bayes factor of \(BF_{dist10} =\) 0.04. When computing Bayes factors with the bridge sampling method we can also compare non-nested models. The comparison of the standard BLMM and the distributional model returns a Bayes factor of \(BF_{blmm,dist} =\) 0, providing strong evidence that the distributional model fits the data better than the standard BLMM.
 
 \subsubsection{Sensitivity Analysis}\label{sensitivity-analysis}
 
 
 
+\begin{figure}
+\centering
+\includegraphics{bachelor_thesis_files/figure-latex/plot-bf-sens-1.pdf}
+\caption{\label{fig:plot-bf-sens}Sensitivity Analysis of Bayes Factors for Two Different Priors Depending on Beta\_1 Prior}
+\end{figure}
+
+Because the Bayes factor is known to be very sensitive to the priors, it is important to do a sensitivity analysis. In the analysis you compare the Bayes Factors for different priors to assess how robust your results are. In our case we will be comparing two different sets of priors for the BLMM and additionally changing the prior of our main fixed effect within each set. The first set of priors is same we have been using so far and the second set is a wider set of priors, with the sd doubled for each parameter. Only the prior for the correlation \(\rho_u\) is halved (from \texttt{lkj(2)} to \texttt{lkj(1)}) to become a wider distribution. For \(\beta_1\) we will use ten different sd for each set of priors. Using wider priors is a good way to test the robustness of the Bayes factor, because they will usually result in Bayes factors closer to zero. The models are set up in the same way as seen above, with a null model for each set of priors. Because the main idea stay the same, we will not do a sensitivity analysis for the distributional model, but it should of course be included in an actual analysis. The results of the sensitivity analysis can be found in \ref{fig:plot-bf-sens}. Regardless of the chosen prior, all the BF in the analysis are at least \(BF_{10} =\) 589.80, which means that the data are 589.80 times more likely to occur under \(H_1\) than under \(H_0\). This is consistent with the results we have found in Sec. 2.xxx. Additionally, we see little difference between the two sets of priors. These results speak for the robustness of the Bayes factor in regards to the chosen prior.
+
 \subsection{Cross Validation}\label{cross-validation}
 
 The other approach to compare Bayesian models is cross validation. In contrast to the BF, in cross validation the model is fit only to a subset of the data (training data). The resulting posterior distribution is then used to predict the held-out (or validation) data and the accuracy of the prediction is assessed. This process is repeated several times, until every subset of a partition was left out once. In the following, we will use leave-one-out cross validation {[}LOO; e.g., Gelman et al. (2014); Vehtari et al. (2017){]}, where the validation data consists only of one data point. Cross validation attempts to assess how our model deals with new data and if we can generalize to out-of-sample data. Of course the validation data are not actually new, as they were collected with the rest of the data set (Nicenboim et al., n.d.). This approach is less dependent on the prior distribution, especially with the amount of data seen in ERP studies forming the likelihood.
 
-To quantify the accuracy of the prediction, we will use an estimator called \emph{expected log pointwise predictive density} (\(elpd\)). For each held-out data point the predictive density, given the model and the training data, is calculated. The elpd is obtained by summing over the log of these predictive densities (Gronau \& Wagenmakers, 2019). To compare two models the difference between the elpd's is computed and the magnitude of this difference is assessed. We will not worry about the further mathematicel specifics here, see Gelman et al. (2014) and Nicenboim et al. (n.d.) for a detailed introduction to LOO.
+To quantify the accuracy of the prediction, we will use an estimator called expected log pointwise predictive density (\(elpd\)). For each held-out data point the predictive density, given the model and the training data, is calculated. The elpd is obtained by summing over the log of these predictive densities (Gronau \& Wagenmakers, 2019). To compare two models the difference between the elpd's is computed and the magnitude of this difference is assessed. We will not worry about the further mathematicel specifics here, see Gelman et al. (2014) and Nicenboim et al. (n.d.) for a detailed introduction to LOO.
 
-For the computation we use the \texttt{loo} function from the brms package, which builds on the loo package as a backend (Vehtari, Gabry, et al., 2024) It uses Pareto smoothed importance sampling {[}PSIS; Vehtari, Simpson, et al. (2024){]} to compute the \(elpd\). Importance sampling allows to estimate sample from the posterior distribution after removal of one data point without having to re-fit the entire model every time (Vehtari et al., 2017). PSIS is a newer, more stable version of this algorithm providing more reliable and accurate estimates (Vehtari, Simpson, et al., 2024).
+For the computation we use the \texttt{loo} function from the brms package, which builds on the loo package as a backend (Vehtari, Gabry, et al., 2024). It uses Pareto smoothed importance sampling {[}PSIS; Vehtari, Simpson, et al. (2024){]} to compute the \(elpd\). Importance sampling allows to estimate sample from the posterior distribution after removal of one data point without having to re-fit the entire model every time (Vehtari et al., 2017). PSIS is a newer, more stable version of this algorithm providing more reliable and accurate estimates (Vehtari, Simpson, et al., 2024).
 
-The implementation is very straightforward. We first need to calculate the elpd for each model we want to compare. In our case again, that means one model with the fixed effect of faces vs.~cars and one null model without this effect. Unlike with BF, we don't need to increase the iterations because the estimation of the \(elpd\) depends mainly on the number of observations and not the number of samples (Nicenboim et al., n.d.). We only need to set up the null model as in Section 2.10 and then use the \texttt{loo} function for every model. The \texttt{loo} function not only gives us the \texttt{elpd\_loo}, the sum of pointwise predictive accuracy (here a less negative number indicates a better prediction). But also the effective number of parameters \texttt{p\_loo}, an estimate of model complexity, and the LOO information criterion \texttt{looic}, which is just \texttt{-2*elpd\_loo}. Additionally, the function will output some diagnostics. We will not discuss them here, but in general it is important for a reliable estimation that the Pareto k estimates are small enough (under .7) (see Vehtari et al., 2017). After computing the \(elpd\) we can use the \texttt{loo\_compare} function to compare the models. \texttt{loo\_compare} computes the difference between the \(elpd\) of the two models (\texttt{elpd\_diff}) as well as the standard error of this difference (\texttt{se\_diff}).
+The implementation is very straightforward. We first need to calculate the elpd for each model we want to compare. In our case again, that means setting up one model with the fixed slope and one null model without this effect. Unlike with BF, we don't need to increase the iterations because the estimation of the \(elpd\) depends mainly on the number of observations and not the number of samples (Nicenboim et al., n.d.). We only need to set up the null model as in Section 2.10 and then use the \texttt{loo} function for every model. The \texttt{loo} function not only gives us the \texttt{elpd\_loo}, the sum of pointwise predictive accuracy (here a less negative number indicates a better prediction). But also the effective number of parameters \texttt{p\_loo}, an estimate of model complexity, and the LOO information criterion \texttt{looic}, which is just \texttt{-2*elpd\_loo}. Additionally, the function will output some diagnostics. We will not discuss them here, but in general it is important for a reliable estimation that the Pareto k estimates are small enough (under .7) (see Vehtari et al., 2017). After computing the \(elpd\) we can use the \texttt{loo\_compare} function to compare the models. \texttt{loo\_compare} computes the difference between the \(elpd\) of the two models (\texttt{elpd\_diff}) as well as the standard error of this difference (\texttt{se\_diff}).
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -897,7 +939,6 @@ The implementation is very straightforward. We first need to calculate the elpd 
 
 \CommentTok{\# Computing the elpd for the null model}
 \NormalTok{loo\_blmm\_0 }\OtherTok{\textless{}{-}} \FunctionTok{loo}\NormalTok{(mod\_blmm\_0)}
-\CommentTok{\#apa\_table(loo\_blmm\_0["estimates"])}
 
 \CommentTok{\# Comparing the models}
 \NormalTok{loo\_comparison\_blmm }\OtherTok{\textless{}{-}} \FunctionTok{loo\_compare}\NormalTok{(loo\_blmm\_1, loo\_blmm\_0)}
@@ -909,14 +950,14 @@ The implementation is very straightforward. We first need to calculate the elpd 
 \begin{center}
 \begin{threeparttable}
 
-\caption{\label{tab:loo-blmm-table}}
+\caption{\label{tab:loo-blmm-table}Comparison of the linear and null BLMM using LOO}
 
 \begin{tabular}{lllllllll}
 \toprule
  & \multicolumn{1}{c}{elpd\_diff} & \multicolumn{1}{c}{se\_diff} & \multicolumn{1}{c}{elpd\_loo} & \multicolumn{1}{c}{se\_elpd\_loo} & \multicolumn{1}{c}{p\_loo} & \multicolumn{1}{c}{se\_p\_loo} & \multicolumn{1}{c}{looic} & \multicolumn{1}{c}{se\_looic}\\
 \midrule
 mod\_blmm & 0.00 & 0.00 & -21,033.82 & 85.91 & 69.42 & 2.11 & 42,067.64 & 171.82\\
-mod\_blmm\_0 & -2.66 & 2.69 & -21,036.48 & 85.89 & 74.88 & 2.25 & 42,072.96 & 171.78\\
+mod\_blmm\_0 & -1.84 & 2.69 & -21,035.66 & 85.95 & 74.37 & 2.27 & 42,071.31 & 171.90\\
 \bottomrule
 \end{tabular}
 
@@ -930,14 +971,14 @@ mod\_blmm\_0 & -2.66 & 2.69 & -21,036.48 & 85.89 & 74.88 & 2.25 & 42,072.96 & 17
 \begin{center}
 \begin{threeparttable}
 
-\caption{\label{tab:loo-dist-table}Comparison of the linear and null distributional model usind LOO}
+\caption{\label{tab:loo-dist-table}Comparison of the linear and null distributional model using LOO}
 
 \begin{tabular}{lllllllll}
 \toprule
  & \multicolumn{1}{c}{elpd\_diff} & \multicolumn{1}{c}{se\_diff} & \multicolumn{1}{c}{elpd\_loo} & \multicolumn{1}{c}{se\_elpd\_loo} & \multicolumn{1}{c}{p\_loo} & \multicolumn{1}{c}{se\_p\_loo} & \multicolumn{1}{c}{looic} & \multicolumn{1}{c}{se\_looic}\\
 \midrule
 mod\_dist & 0.00 & 0.00 & -20,516.62 & 72.36 & 120.80 & 7.61 & 41,033.23 & 144.72\\
-mod\_dist\_0 & -1.72 & 2.52 & -20,518.33 & 72.29 & 125.46 & 7.44 & 41,036.67 & 144.58\\
+mod\_dist\_0 & -1.66 & 2.51 & -20,518.27 & 72.24 & 125.56 & 7.40 & 41,036.55 & 144.48\\
 \bottomrule
 \end{tabular}
 
@@ -946,16 +987,12 @@ mod\_dist\_0 & -1.72 & 2.52 & -20,518.33 & 72.29 & 125.46 & 7.44 & 41,036.67 & 1
 
 \end{table}
 
-Table \ref{tab:loo-blmm-table} shows the \(elpd\) difference and the se of said difference in the first two columns as well as more detailed information about the models (including \texttt{elpd\_loo}, \texttt{p\_loo} and \texttt{looic}) in the rear columns. An \(elpd\) difference of \(elpd_{diff}\) = -2.70 tells us that the the model with the experimental condition as a predictor has a higher predictive accuracy. Although this supports our initial hypothesis, as the difference is smaller than 4 and also smaller than 2 \(se\), it cannot be interpreted as a meaningful superiority of one model over the other (Nicenboim et al., n.d.).
-
-The same pattern arises in the comparison of the linear und null distributional model. As we can see in Table \ref{tab:loo-dist-table} the \(elpd_{diff}\) of -1.70 is similarly small.
-
 \begin{table}[tbp]
 
 \begin{center}
 \begin{threeparttable}
 
-\caption{\label{tab:loo-blmm-dist-table}}
+\caption{\label{tab:loo-blmm-dist-table}Comparison of the BLMM and the distributional model using LOO}
 
 \begin{tabular}{lllllllll}
 \toprule
@@ -971,26 +1008,19 @@ mod\_blmm & -517.20 & 45.32 & -21,033.82 & 85.91 & 69.42 & 2.11 & 42,067.64 & 17
 
 \end{table}
 
-The comparison between the distributional and the standard LMM (see Table \ref{tab:loo-blmm-dist-table}) confirms the strong superiority of the distributional model that we had already seen with the BFs with an \(elpd_{diff}\) of -517.20.
-
-These results
-
-never a whole new subject
-small effects
-difference to BF
-inconsistent
+Table \ref{tab:loo-blmm-table} shows the \(elpd\) difference and the se of said difference in the first two columns as well as more detailed information about the models (including \texttt{elpd\_loo}, \texttt{p\_loo} and \texttt{looic}) in the rear columns. An \(elpd\) difference of \(elpd_{diff}\) = -1.80 tells us that the the model with the experimental condition as a predictor has a higher predictive accuracy. Although this supports our initial hypothesis, as the difference is smaller than 4 and also smaller than 2 \(se\), it cannot be interpreted as a meaningful superiority of one model over the other (Nicenboim et al., n.d.). The same pattern arises in the comparison of the linear and null distributional model. As we can see in Table \ref{tab:loo-dist-table} the \(elpd_{diff}\) of -1.70 is similarly small. Note that this deviates from the results produced by using BF. The comparison between the distributional and the standard LMM (see Table \ref{tab:loo-blmm-dist-table}) confirms the strong superiority of the distributional model that we had already seen with the BFs with an \(elpd_{diff}\) of -517.20.
 
 \subsection{Reporting Practices}\label{reporting-practices}
 
 Analyses with BLMMs imply a great amount of researchers degrees of freedom, and thus it is essential to provide enough information on the analysis for others to be able to replicate and evaluate it. Simmons et al. (2011) show impressively what can happen when analyses are not disclosed. Ideally, the entire code (and, if possible, data) should be uploaded in an online repository like the Open Science Framework or GitHub (Epskamp, 2019). This not only provides all the analyses in one place but also solves the problem of having to decide what to report within a possibly limited word count. In addition, if the analyses were conducted in R researchers could consider making it entirely reproducible (see e.g., Brandmaier \& Peikert, 2024; Marwick et al., 2018; Peikert \& Brandmaier, 2019).
 
-Generally, the software used for the analyses should be cited as well as all associated packages with version numbers respectively. Epskamp (2019) even suggests to use a package like renv ((\textbf{R-renv?})) that stores the source code of every package at the point of use and makes later reproducibility much easier. Also, setting a seed for the generation of pseudorandom numbers at the beginning of the analysis helps with more exact reproducibility. The variables (dependent and independent) should be clearly named and explained further if necessary (Kruschke, 2021). It might also be helpful, to explain why one chose a specific method and explain the method and possible benefits if the audience requires it (Kruschke, 2021). Additionally, for different methods different aspects might be reported (e.g.~inclusion criteria for a meta-analysis(Hansen et al., 2022)). We will discuss the primary reporting practices for LMMs and Bayesian methods next.
+Generally, the software used for the analyses should be cited as well as all associated packages with version numbers respectively. Epskamp (2019) even suggests to use a package like renv ((\textbf{R-renv?})) that stores the source code of every package at the point of use and makes later reproducibility much easier. Also, setting a seed for the generation of pseudorandom numbers at the beginning of the analysis helps with more exact reproducibility. The variables (dependent and independent) and hypothesis should be clearly named and explained further if necessary (Kruschke, 2021; \textbf{vandoorn\_etal21?}). It might also be helpful, to explain why one chose a specific method and explain the method and possible benefits if the audience requires it (Kruschke, 2021). Additionally, for different methods different aspects might be reported (e.g.~inclusion criteria for a meta-analysis (Hansen et al., 2022)). We will discuss the primary reporting practices for LMMs and Bayesian methods next.
 
 For frequentist LMMs Meteyard and Davies (2020) provide a comprehensive overview on reporting practices. They recommend to report the equation of the final model as well as the approach used for model selection. Reporting additional models (not only the final one) can also be beneficial (Wagenmakers et al., 2021). Meteyard and Davies (2020) also suggest to provide point estimates, standard error and confidence interval of the fixed effects and all variances of random effects. If p values are used the method to approximate degrees of freedom should be stated (Meteyard \& Davies, 2020).
 
 In Bayesian statistics reporting becomes even more important due to the increased researchers degrees of freedom but also more complicated because among others we are dealing with posterior distributions not only point estimates. Depending on the performed analysis very different things should be reported in papers using Bayesian methods. In the following we will concentrate on the most important aspects for the analyses performed above. Kruschke (2021) gives a more detailed review on Bayesian reporting practices and guidelines to improve reproducibility and quality of Bayesian analyses.
 
-As part of the methods presentation the assumed likelihood function should be explained, the prior distributions should be stated and justified for each parameter and the model should be formally specified (include likelihood and prior) (Kruschke, 2021). For multilevel models, like the ones discussed in this paper, the hierarchical structure should be explained. Kruschke (2021) recommends performing and reporting prior predictive checks (see Section xxx), especially for more informative priors. The performance of the computation (MCMC in our case) should also be reported, here Kruschke (2021) recommends to report a convergence measure, like the \(\hat{R}\) seen above, and a measure for the resolution, this refers to the ESS. Since MCMC algorithms can be quite time-intensive it might be advised to publish the entire MCMC chain. The posterior distributions should be summarized by a measure of central tendency and the credible interval, ideally posterior predictive checks should show that the model mimics the data (Kruschke, 2021). For the hypothesis testing Kruschke (2021) suggests to state the decision procedure/threshold and the observed BF and posterior probabilities or the observed difference in elpd. Finally, the sensitivity analysis should be reported to show if or how the prior influences the posterior and especially if the decisions change under different priors (Kruschke, 2021). Of course, additional analysis might need further reporting and researchers might chose to address some of the points discussed in the appendix or supplementary material.
+As part of the methods presentation the assumed likelihood function should be explained, the prior distributions should be stated and justified for each parameter and the model should be formally specified (include likelihood and prior) (Kruschke, 2021). For multilevel models, like the ones discussed in this paper, the hierarchical structure should be explained. Kruschke (2021) recommends performing and reporting prior predictive checks (see Section xxx), especially for more informative priors. The performance of the computation (MCMC in our case) should also be reported, here Kruschke (2021) recommends to report a convergence measure, like the \(\hat{R}\) seen above, and a measure for the resolution, this refers to the ESS. Since MCMC algorithms can be quite time-intensive it might be advised to publish the entire MCMC chain. The posterior distributions should be summarized by a measure of central tendency and the credible interval, ideally posterior predictive checks should show that the model mimics the data (Kruschke, 2021). For the hypothesis testing Kruschke (2021) suggests to state the decision procedure/threshold and the observed BF and posterior probabilities or the observed difference in elpd. Finally, the sensitivity analysis should be reported to show if or how the prior influences the posterior and especially if the decisions change under different priors (Kruschke, 2021; \textbf{vandoorn\_etal21?}). Ideally, this should include a plot as well as a numerical report of the results (\textbf{vandoorn\_etal21?}). Of course, additional analysis might need further reporting and researchers might chose to address some of the points discussed in the appendix or supplementary material.
 
 \section{Discussion}\label{discussion}
 
@@ -1015,13 +1045,31 @@ Vorteile LMM:
 
 Vorteile Bayes (Bürkner, 2018, Kruschke (2021))
 - flexibility
-- Possibility of collecting evidence in favor of th null hypothesis
+-
 - Quantify the uncertainty of the estimation
 - Incorporate prior knowledge
 - credible intervals are robust also for small n
 - flexible parametric assumptions
 
+Model comparison
+- Pros
+- Possibility of collecting evidence in favor of th null hypothesis
+- interpretation of p-values
+-
+- BF (Tendeiro et al., 2024; Tendeiro \& Kiers, 2019)
+- not as dependent on prior -\textgreater{} further research needed (amount of data in EEG experiments)
+- computationally intensive
+- not truly Bayesian (compared with cut off)
+- should be combined with prior odds (very difficult to get) (Tendeiro \& Kiers, 2019)
+- Cross val
+- never a whole new subject
+- small effects
+- difference to BF
+- inconsistent
+
 \subsection{Strengths and Limitations}\label{strengths-and-limitations}
+
+Due to the introductory nature of this tutorial, many topics could not be presented in depth.
 
 \begin{itemize}
 \tightlist
@@ -1053,9 +1101,9 @@ Vorteile Bayes (Bürkner, 2018, Kruschke (2021))
     or max to min ((Barr et al., 2013; Brauer \& Curtin, 2018) -\textgreater{} better for confinrmatory
   \item
     state how you did it (Meteyard \& Davies, 2020)
-  \item
-    overfitting
   \end{itemize}
+\item
+  overfitting
 \end{itemize}
 
 The present tutorial only represents the very beginning of using Bayesian methods in the statistical analysis of ERP studies. Many additional points should be considered in further research. Especially important would be the extension to multiple predictors and crossed random effects as well as giving a rationale for model choice
@@ -1085,6 +1133,12 @@ Betancourt, M. (2018, July 15). \emph{A {Conceptual Introduction} to {Hamiltonia
 
 \bibitem[\citeproctext]{ref-brandmaier_peikert24}
 Brandmaier, A. M., \& Peikert, A. (2024, June 27). \emph{Automated {Reproducibility Testing} in {R Markdown}}. \url{https://doi.org/10.31234/osf.io/3zjvf}
+
+\bibitem[\citeproctext]{ref-brauer_curtin18}
+Brauer, M., \& Curtin, J. J. (2018). Linear mixed-effects models and the analysis of nonindependent data: {A} unified framework to analyze categorical and continuous independent variables that vary within-subjects and/or within-items. \emph{Psychological Methods}, \emph{23}(3), 389--411. \url{https://doi.org/10.1037/met0000159}
+
+\bibitem[\citeproctext]{ref-brown21}
+Brown, V. A. (2021). An {Introduction} to {Linear Mixed-Effects Modeling} in {R}. \emph{Advances in Methods and Practices in Psychological Science}, \emph{4}(1), 2515245920960351. \url{https://doi.org/10.1177/2515245920960351}
 
 \bibitem[\citeproctext]{ref-burki_etal18}
 Bürki, A., Frossard, J., \& Renaud, O. (2018). Accounting for stimulus and participant effects in event-related potential analyses to increase the replicability of studies. \emph{Journal of Neuroscience Methods}, \emph{309}, 218--227. \url{https://doi.org/10.1016/j.jneumeth.2018.09.016}
@@ -1121,6 +1175,9 @@ Gronau, Q. F., \& Wagenmakers, E.-J. (2019). Limitations of {Bayesian Leave-One-
 
 \bibitem[\citeproctext]{ref-hansen_etal22}
 Hansen, C., Steinmetz, H., \& Block, J. (2022). How to conduct a meta-analysis in eight steps: A practical guide. \emph{Management Review Quarterly}, \emph{72}(1), 1--19. \url{https://doi.org/10.1007/s11301-021-00247-4}
+
+\bibitem[\citeproctext]{ref-heck_etal23}
+Heck, D. W., Boehm, U., Böing-Messing, F., Bürkner, P.-C., Derks, K., Dienes, Z., Fu, Q., Gu, X., Karimova, D., Kiers, H. A. L., Klugkist, I., Kuiper, R. M., Lee, M. D., Leenders, R., Leplaa, H. J., Linde, M., Ly, A., Meijerink-Bosman, M., Moerbeek, M., \ldots{} Hoijtink, H. (2023). A review of applications of the {Bayes} factor in psychological research. \emph{Psychological Methods}, \emph{28}(3), 558--579. \url{https://doi.org/10.1037/met0000454}
 
 \bibitem[\citeproctext]{ref-joe06}
 Joe, H. (2006). Generating random correlation matrices based on partial correlations. \emph{Journal of Multivariate Analysis}, \emph{97}(10), 2177--2189. \url{https://doi.org/10.1016/j.jmva.2005.05.010}
@@ -1191,6 +1248,12 @@ Simmons, J. P., Nelson, L. D., \& Simonsohn, U. (2011). False-{Positive Psycholo
 \bibitem[\citeproctext]{ref-standevelopmentteam24}
 Team, S. D. (2024). \emph{Stan {Modeling Language Users Guide} and {Reference Manual}} (Version 2.35). \url{https://mc-stan.org}
 
+\bibitem[\citeproctext]{ref-tendeiro_kiers19}
+Tendeiro, J. N., \& Kiers, H. A. L. (2019). A review of issues about null hypothesis {Bayesian} testing. \emph{Psychological Methods}, \emph{24}(6), 774--795. \url{https://doi.org/10.1037/met0000221}
+
+\bibitem[\citeproctext]{ref-tendeiro_etal24}
+Tendeiro, J. N., Kiers, H. A. L., Hoekstra, R., Wong, T. K., \& Morey, R. D. (2024). Diagnosing the {Misuse} of the {Bayes Factor} in {Applied Research}. \emph{Advances in Methods and Practices in Psychological Science}, \emph{7}(1), 25152459231213371. \url{https://doi.org/10.1177/25152459231213371}
+
 \bibitem[\citeproctext]{ref-tibon_levy15}
 Tibon, R., \& Levy, D. A. (2015). Striking a balance: Analyzing unbalanced event-related potential data. \emph{Frontiers in Psychology}, \emph{6}. \url{https://doi.org/10.3389/fpsyg.2015.00555}
 
@@ -1205,6 +1268,9 @@ Vehtari, A., Gelman, A., \& Gabry, J. (2017). Practical {Bayesian} model evaluat
 
 \bibitem[\citeproctext]{ref-vehtari_etal21}
 Vehtari, A., Gelman, A., Simpson, D., Carpenter, B., \& Bürkner, P.-C. (2021). Rank-{Normalization}, {Folding}, and {Localization}: {An Improved Rˆ} for {Assessing Convergence} of {MCMC} (with {Discussion}). \emph{Bayesian Analysis}, \emph{16}(2), 667--718. \url{https://doi.org/10.1214/20-BA1221}
+
+\bibitem[\citeproctext]{ref-vehtari_ojanen12}
+Vehtari, A., \& Ojanen, J. (2012). A survey of {Bayesian} predictive methods for model assessment, selection and comparison. \emph{Statistics Surveys}, \emph{6}, 142--228. \url{https://doi.org/10.1214/12-SS102}
 
 \bibitem[\citeproctext]{ref-vehtari_etal24}
 Vehtari, A., Simpson, D., Gelman, A., Yao, Y., \& Gabry, J. (2024). Pareto {Smoothed Importance Sampling}. \emph{Journal of Machine Learning Research}, \emph{25}(72), 1--58. \url{http://jmlr.org/papers/v25/19-556.html}
