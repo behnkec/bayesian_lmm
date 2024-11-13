@@ -57,5 +57,8 @@ output/
 # No folders
 /*/
 
+# include following folders
+!/auxiliary_files
+
 # HTML files
 *.html
