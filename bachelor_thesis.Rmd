@@ -48,8 +48,9 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(eval = TRUE)
 ```
 
-```{r  packages, include = FALSE}
+```{r packages, include = FALSE}
 # Load packages
+library(lmerTest)
 library(bridgesampling)
 library(brms)
 library(readr)
@@ -128,14 +129,11 @@ Berlin, den xx.xx.2024&\\
 
 \begin{center}\textbf{Acknowledgments}\end{center}
 
-.....
-
-<!-- I would like to express my sincere gratitude to those who have supported me throughout my journey in completing this thesis.
-First and foremost, I would like to thank Alexander Enge for his amazing supervision. Your guidance and encouragement have been invaluable, and your passion has inspired me. Thank you for always being there to help and for igniting my excitement about this topic.
-I am also grateful to Rasha Abdel Rahman for her insightful contributions and critical questions that challenged me to think about the bigger picture. Your perspective has deepened my understanding and alerted me to gaps in my knowledge.
-I also want to thank Rasha for her valuable insights and thought-provoking questions. Your ability to encourage me to consider the broader implications of my work has been greatly appreciated.
+I would like to express my sincere gratitude to those who have supported me throughout my journey in completing this thesis.
+First and foremost, I would like to thank Alexander Enge for his amazing supervision. Your guidance and encouragement have been invaluable and have always motivated me to dig deeper. Thank you for always being there to help and for igniting my excitement about this topic.
+I am also grateful to Rasha Abdel Rahman for her valuable insights and thought-provoking questions that challenged me to think about the bigger picture. Your perspective has deepened my understanding and alerted me to gaps in my knowledge.
 To my friends and family, thank you for your unwavering emotional support and for always being willing to listen to my ideas. Your encouragement has kept me motivated and grounded throughout this process.
-This thesis would not have been possible without the support of all of you. -->
+This thesis would not have been possible without the support of all of you.
 
 <!-- Empty page -->
 
@@ -155,17 +153,25 @@ This thesis would not have been possible without the support of all of you. -->
 \end{flushleft}
 ```
 
+<!-- Empty page -->
+
+\clearpage\mbox{}\thispagestyle{empty}\clearpage
+
 <!-- Abstract -->
 
 \newpage
 
-\setcounter{page}{6}
+\setcounter{page}{7}
 
 # Abstract {.unnumbered}
 
 \noindent In many disciplines, Bayesian methods have become increasingly important in complementing frequentist approaches to data analysis, but they have not yet found their way into the analysis of electrophysiological data in psychology. This tutorial attempts to provide a comprehensible and approachable introduction to the use of Bayesian Linear Mixed Models for the analysis of EEG data. The basic concepts are explained alongside a worked-out example of an analysis in R. The main component of this approach is the implementation of single-trial-based analyses of event-related potentials as Bayesian Linear Mixed Models using the R package brms. Important aspects like the elicitation of appropriate priors and the implementation of model comparison are also addressed and possible extensions of the model introduced. All of this in an attempt to provide a starting point for frequentist researchers from which to approach Bayesian methods.
 
 *Keywords:* Bayesian statistics, Linear Mixed Models, EEG
+
+<!-- Empty page -->
+
+\clearpage\mbox{}\thispagestyle{empty}\clearpage
 
 <!-- Actual Thesis -->
 
@@ -240,7 +246,7 @@ With \enspace & \beta_{0j} = \beta_{0} + u_{0j} \\
 
 Eq. \@ref(eq:LMM-specifics) describes the random effects structure of the model. The random intercept consists of a fixed intercept $\beta_{0}$ that is the same as for the standard linear regression as well as a person-specific deviation $u_{0j}$. This represents the variance of the intercept between participants and is normally distributed around zero with a standard deviation (sd) $\tau_{u_0}$. The same applies to the effect of the predictor X which consists of a fixed effect $\beta_{1}$ and a random effect $u_{1j}$ that is also normally distributed around zero with an standard deviation $\tau_{u_1}$. Lastly, the correlation between random intercept and random slope is described by some $\rho_u$. This correlation could also be assumed to be zero, but it is usually included in ERP research.
 
-To fit the frequentist LMM in R, we will use the lmerTest package [@kuznetsova_etal17], using the Satterthwaite’s method for approximating degrees of freedom to compute the p-values. We enter our model into the `lmer` function by using the Wilkinson notation [@wilkinson_rogers73] and specify the dataset.
+To fit the frequentist LMM in R, we will use the lmerTest package [Version `r as.character(packageVersion("lmerTest"))`\; @R-lmerTest], using the Satterthwaite’s method for approximating degrees of freedom to compute the p-values. We enter our model into the `lmer` function by using the Wilkinson notation [@wilkinson_rogers73] and specify the dataset.
 
 ```{r freq-LMM}
 # Fitting the frequentist LMM
@@ -252,13 +258,45 @@ mod_freq <- lmerTest::lmer(N170 ~ 1 + f_c + (1 + f_c | participant_id),
 
 For easier comparison with the Bayesian models, we will look at the fixed as well as random effects of the frequentist model. A summary of all the model estimates can be found in Table \@ref(tab:fLMM-table). We defined the main fixed effect as the overall effect of the experimental tasks. When participants were presented with faces the amplitude of the N170 component was significantly more negative, $b_1 =$ `r summary(mod_freq)$coefficients["f_cface", "Estimate"]`, p `r ifelse(summary(mod_freq)$coefficients["f_cface", "Pr(>|t|)"] < 0.001, "< 0.001", paste0("= ", as.character(round(summary(mod_freq)$coefficients["f_cface", "Pr(>|t|)"], 3))))`, compared to when presented with cars. For the random effects we are most interested in the standard deviations, as we will use those when setting up the Bayesian model. The standard deviation of the random intercept was $sd_0 =$ `4.129` and the standard deviation of the random slope was $sd_1 =$ `1.529` with a correlation of $r =$ `0.07`. After fitting the Bayesian model we will be able to look at differences between the results of the two models.
 
-```{r fLMM-table, echo = FALSE}
+<!--
+```{r fLMM-table, eval = FALSE}
 # Output of frequentist LMM in apa format
 apa_mod_freq <- apa_print(mod_freq)
 apa_table(apa_mod_freq$table, 
-          caption = "Results of Frequentist Linear Mixed Model")
-#mod_freq_sum <- summary(mod_freq)
-summary_table <- summary(mod_freq)
+          caption = "Results of Frequentist Linear Mixed Model",
+          note = "CI = confidence interval")
+```
+-->
+
+```{=latex}
+\begin{table}[tbp]
+
+\begin{center}
+\begin{threeparttable}
+
+\caption{\label{tab:fLMM-table}Results of Frequentist Linear Mixed Model}
+
+\begin{tabular}{llllll}
+\toprule
+Term & $\hat{\beta}$ & 95\% CI & $t$ & $\mathit{df}$ & $p$\\
+\midrule
+Intercept & 5.69 & {}[4.39, 7.00] & 8.56 & 39.05 & < .001\\
+F\_cface & -1.76 & {}[-2.35, -1.17] & -5.84 & 38.80 & < .001\\
+Random effects & Var & SD & & & \\
+Pertcipants (Intercept) & 17.047 & 4.129 & & & \\
+F\_cface & 2.337 & 1.529 & & & \\
+\bottomrule
+\addlinespace
+\end{tabular}
+
+\begin{tablenotes}[para]
+\normalsize{\textit{Note.} CI = confidence interval}
+\end{tablenotes}
+
+\end{threeparttable}
+\end{center}
+
+\end{table}
 ```
 
 <!--
@@ -335,7 +373,7 @@ For each parameter in our model, our prior knowledge will be expressed as a prio
 
 ### Implementation in R
 
-When fitting the Bayesian LMM in R, the syntax stays almost the same as for frequentist LMMs. In the following example, we are using the `brm` function from the brms package [@burkner18; @burkner24] to fit our model. This package relies on the statistical software STAN [@standevelopmentteam24] for the back-end computations. The sampling algorithm used by STAN is called Markov Chain Monte Carlo (MCMC) and will be discussed in more detail in Section 2.6. To use the `brm` function, we simply need to specify the prior and and set the likelihood distribution (`family`). In our case, we assumed single-trial ERP averages to be normally distributed and we will therefore set the likelihood to `gaussian`. This is also the default distribution, so technically we would not need to specify this. Next, we need to specify a prior for every parameter of our model (see Eq. \@ref(eq:priors-BLMM)). At this moment, we will assume the prior as given but the used prior will be derived in detail in the next section. By default, we will sample four times indepedently (in four seperate *chains*), with 2000 samples per chain. As a warm-up phase, 1000 samples are discarded for each chain , which leads to a total of 4000 samples. To speed up the computations, we will set the `cores` argument to four, this parallelizes the computation by using one CPU for each chain (only if 4 or more CPUs are available). 
+When fitting the Bayesian LMM in R, the syntax stays almost the same as for frequentist LMMs. In the following example, we are using the `brm` function from the brms package [Version `r as.character(packageVersion("brms"))`\; @burkner18; @burkner24] to fit our model. This package relies on the statistical software Stan [@standevelopmentteam24] for the back-end computations. The sampling algorithm used by Stan is called Markov Chain Monte Carlo (MCMC) and will be discussed in more detail in Section 2.6. To use the `brm` function, we simply need to specify the prior and and set the likelihood distribution (`family`). In our case, we assumed single-trial ERP averages to be normally distributed and we will therefore set the likelihood to `gaussian`. This is also the default distribution, so technically we would not need to specify this. Next, we need to specify a prior for every parameter of our model (see Eq. \@ref(eq:priors-BLMM)). At this moment, we will assume the prior as given but the used prior will be derived in detail in the next section. By default, we will sample four times indepedently (in four seperate *chains*), with 2000 samples per chain. As a warm-up phase, 1000 samples are discarded for each chain , which leads to a total of 4000 samples. To speed up the computations, we will set the `cores` argument to four, this parallelizes the computation by using one CPU for each chain (only if 4 or more CPUs are available). 
 
 ```{r Prior-1, echo=FALSE}
 # Setting the prior
@@ -606,9 +644,7 @@ summary(mod_dist)
 ```
 \normalsize
 
-Notice that the estimate of the main effect, the difference between the perception of faces and cars in the N170, remains almost the same with $b_1$ = `r fixef(mod_dist, pars = "f_cface")[1]` compared to $b_1$ =  `r fixef(mod_blmm, pars = "f_cface")[1]` in the standard BLMM. The same holds for the intercept which also changes only slightly from $b_0$ = `r fixef(mod_dist, pars = "Intercept")[1]` to $b_0$ = `r fixef(mod_blmm, pars = "Intercept")[1]`, in the previous model. The two new parameters in our distibutional model are referred to as `sd(sigma_intercept)` for the variance component of sigma and `sigma_Intercept` for the intercept of the sigma. 
-
-The model also seems `r ifelse(all(summarize_draws(as_draws_array(mod_dist))["rhat"]<1.01), "", "not")` to have converged nicely, as `r ifelse(all(summarize_draws(as_draws_array(mod_dist))["rhat"]<1.01), "all", "not all")` $\hat{R}$s are under $1.01$ and the ESS are at a minimum of `r round(min(summarize_draws(as_draws_array(mod_dist))[c("ess_bulk","ess_tail")]), 0)`.
+Notice that the estimate of the main effect, the difference between the perception of faces and cars in the N170, remains almost the same with $b_1$ = `r fixef(mod_dist, pars = "f_cface")[1]` compared to $b_1$ =  `r fixef(mod_blmm, pars = "f_cface")[1]` in the standard BLMM. The same holds for the intercept which also changes only slightly to $b_0$ = `r fixef(mod_dist, pars = "Intercept")[1]` (compared to $b_0$ = `r fixef(mod_blmm, pars = "Intercept")[1]`). The two new parameters in our distributional model are referred to as `sigma_Intercept` for the intercept of the sigma and `sd(sigma_intercept)` for the variance component of sigma. The model also seems `r ifelse(all(summarize_draws(as_draws_array(mod_dist))["rhat"]<1.01), "", "not")` to have converged nicely, as `r ifelse(all(summarize_draws(as_draws_array(mod_dist))["rhat"]<1.01), "all", "not all")` $\hat{R}$s are under $1.01$ and the ESS are at a minimum of `r round(min(summarize_draws(as_draws_array(mod_dist))[c("ess_bulk","ess_tail")]), 0)`.
 
 Despite the small differences in the point estimates, by performing a posterior predictive check it becomes clear that the new model can fit our data better than the old one (see Fig. \@ref(fig:posterior-check-dist)), fitting every part of the distribution. Accounting for the differences in noise level between participants seems to have made a difference for the model fit, at least on a visual level. This leads us to expect an improved prediction capacity of the model. In the next section we will look at a way to quantify this improvement.
 
@@ -689,7 +725,7 @@ blmm_bf_1 <- brm(N170 ~ 1 + f_c + (1 + f_c | participant_id),
                 family = gaussian())
 ```
 
-After setting up the two alternative models, the marginal log likelihoods are computed using the `bridge_sample` function from the bridgesampling package [@gronau_etal20]. Here, the marginal log likelihoods are used because the marginal likelihoods can be very small in the multidimensional probability space used for sampling and hence can lead to numerical problems.
+After setting up the two alternative models, the marginal log likelihoods are computed using the `bridge_sample` function from the bridgesampling package [Version `r as.character(packageVersion("bridgesampling"))`\; @gronau_etal20]. Here, the marginal log likelihoods are used because the marginal likelihoods can be very small in the multidimensional probability space used for sampling and hence can lead to numerical problems.
 
 ```{r marg-loklik-blmm}
 # Compute marginal log likelihood for model 1
@@ -905,7 +941,7 @@ The other approach to comparing Bayesian models is cross validation. In contrast
 
 To quantify the accuracy of the prediction, we will use an estimator called expected log pointwise predictive density ($elpd$). For each held-out data point the predictive density, given the model and the training data, is calculated. The elpd is obtained by summing over the log of these predictive densities [@gronau_wagenmakers19]. To compare two models, the difference between the elpd's is computed and the magnitude of this difference is assessed. We will not elaborate on the mathematicel specifics here, but refer the reader to @gelman_etal14 and @nicenboim_etal for a detailed introduction to LOO. 
 
-For the computation, we use the `loo` function from the brms package, which builds on the loo package as a backend [@vehtari_etal24a]. It uses Pareto smoothed importance sampling [PSIS; @vehtari_etal24] to compute the $elpd$. Importance sampling allows to estimate samples from the posterior distribution after removal of one data point without having to re-fit the entire model each time [@vehtari_etal17]. PSIS is a newer, more stable version of this algorithm providing more reliable and accurate estimates [@vehtari_etal24]. 
+For the computation, we use the `loo` function from the brms package, which builds on the loo package as a backend [Version `r as.character(packageVersion("loo"))`\; @vehtari_etal24a]. It uses Pareto smoothed importance sampling [PSIS; @vehtari_etal24] to compute the $elpd$. Importance sampling allows to estimate samples from the posterior distribution after removal of one data point without having to re-fit the entire model each time [@vehtari_etal17]. PSIS is a newer, more stable version of this algorithm providing more reliable and accurate estimates [@vehtari_etal24]. 
 
 The implementation is very straightforward. We first need to calculate the elpd for each model we want to compare. In our case, this means setting up one model with the fixed slope and one null model without this effect. Unlike with BFs, we do not need to increase the iterations because the estimation of the $elpd$ depends mainly on the number of observations and not the number of samples [@nicenboim_etal]. We only need to set up the null model as in Section 2.10 and then use the `loo` function for every model. The `loo` function not only gives us the `elpd_loo`, the sum of pointwise predictive accuracy (here a less negative number indicates a better prediction), but also the effective number of parameters `p_loo`, an estimate of model complexity, and the LOO information criterion `looic`, which is just `-2*elpd_loo`. Additionally, the function will output some diagnostics. We will not discuss them here, but in general, it is important for a reliable estimation that the Pareto k estimates are small enough [under .7, see @vehtari_etal17]. After computing the $elpd$ we can use the `loo_compare` function to compare the models. `loo_compare` computes the difference between the $elpd$ of the two models (`elpd_diff`) as well as the standard error of this difference (`se_diff`). Although these estimates are known to be less sensitive to the priors than the BF, it is nevertheless suggested that a sensitivity analysis be performed for the cross-validation using a few different priors (see Section 2.10.3).
 
@@ -976,7 +1012,7 @@ Table \@ref(tab:loo-blmm-table) shows the $elpd$ difference and the se of said d
 
 Analyses with BLMMs imply a great amount of researchers' degrees of freedom, and thus it is essential to provide enough information on the analysis for others to be able to reproduce and evaluate it. @simmons_etal11 show impressively what can happen when analyses are not disclosed. Ideally, the entire code (and, if possible, data) should be uploaded in an online repository like the Open Science Framework or GitHub [@epskamp19]. This not only provides all the analyses in one place but also solves the problem of having to decide what to report within a possibly limited word count. In addition, if the analyses were conducted in R researchers could consider making it entirely reproducible [see e.g., @brandmaier_peikert24; @marwick_etal18; @peikert_brandmaier19]. 
 
-Generally, the software used for the analyses should be cited as well as all associated packages with version numbers, respectively. @epskamp19 even suggests to use a package like renv (@R-renv) that stores the source code of every package at the point of use and makes later reproducibility much easier. Also, setting a seed for the generation of pseudorandom numbers at the beginning of the analysis helps with more exact reproducibility. The variables (dependent and independent) and hypotheses should be clearly named and explained further if necessary [@kruschke21; @vandoorn_etal21]. It might also be helpful, to explain why one chose a specific method and explain the method and possible benefits if the audience requires it [@kruschke21]. Additionally, for different methods different aspects might be reported (e.g. inclusion criteria for a meta-analysis [@hansen_etal22]). We will discuss the primary reporting practices for LMMs and Bayesian methods next.
+Generally, the software used for the analyses should be cited as well as all associated packages with version numbers, respectively. @epskamp19 even suggests to use a package like renv [Version `r as.character(packageVersion("renv"))`\; @R-renv] that stores the source code of every package at the point of use and makes later reproducibility much easier. Also, setting a seed for the generation of pseudorandom numbers at the beginning of the analysis helps with more exact reproducibility. The variables (dependent and independent) and hypotheses should be clearly named and explained further if necessary [@kruschke21; @vandoorn_etal21]. It might also be helpful, to explain why one chose a specific method and explain the method and possible benefits if the audience requires it [@kruschke21]. Additionally, for different methods different aspects might be reported [e.g. inclusion criteria for a meta-analysis @hansen_etal22]. We will discuss the primary reporting practices for LMMs and Bayesian methods next.
 
 For frequentist LMMs @meteyard_davies20 provide a comprehensive overview on reporting practices. They recommend to report the equation of the final model as well as the approach used for model selection. Reporting additional models (not only the final one) can also be beneficial [@wagenmakers_etal21]. @meteyard_davies20 also suggest to provide point estimates, standard errors, and confidence intervals of the fixed effects and all variances of random effects. If p values are used, the method to approximate degrees of freedom should be stated [@meteyard_davies20].
 
