@@ -58,12 +58,13 @@ output/
 /*/
 
 # include following folders
-!/auxiliary_files
+!/auxiliary_files/
 
 # HTML files
 *.html
 
 # renv files needed
-!/renv/settings.json
-!renv/activate.R
+!/renv
+/renv/library/
+
 
