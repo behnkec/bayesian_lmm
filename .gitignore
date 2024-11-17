@@ -62,3 +62,8 @@ output/
 
 # HTML files
 *.html
+
+# renv files needed
+!/renv/settings.json
+!renv/activate.R
+
