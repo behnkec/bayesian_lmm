@@ -1,0 +1,76 @@
+---
+title: "Preprocessing ERP CORE - N400"
+format: html
+editor: source
+---
+
+## Installation
+
+Install reticulate
+
+```{r}
+#install.packages("reticulate")
+library(reticulate)
+```
+
+Check if conda distribution exists (and install if necessary)
+
+```{r}
+conda_exe()
+
+#install_miniconda()
+```
+
+Install package "hu-neuro-pipeline"
+
+```{r}
+py_install("hu-neuro-pipeline", pip = TRUE)
+```
+
+## Processing UCAP data
+
+### Loading packages
+
+```{r}
+library("reticulate")
+library("Rmisc")
+library("dplyr")
+library("ggplot2")
+library("lme4")
+```
+
+### Loading the pipeline & downloading ERP Core Data
+
+```{r}
+pipeline <- import("pipeline")
+n400_files <- pipeline$datasets$get_erpcore("N400")
+print(n400_files)
+```
+
+### Running the pipeline
+
+```{r}
+res <- pipeline$group_pipeline(
+
+  # Input/output paths
+  raw_files = n400_files$raw_files,
+  log_files = n400_files$log_files,
+  output_dir = "output_erpcore",
+
+  # Preprocessing options
+  downsample_sfreq = 250.0,
+  bad_channels = 'auto',
+  montage = 'biosemi64',
+  ica_method = 'fastica',
+
+  # Epoching options
+  triggers = c(211, 212, 221, 222),
+  skip_log_conditions = list("value" = c(111, 112, 121, 122, 201, 202)),
+  components = list(
+    "name" = list("N400"),
+    "tmin" = list(0.3),
+    "tmax" = list(0.5),
+    "roi" = list("CPz")
+  ),
+)
+```

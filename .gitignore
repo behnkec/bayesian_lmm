@@ -59,6 +59,7 @@ output/
 
 # include following folders
 !/auxiliary_files/
+!/bachelor_thesis_final/
 
 # HTML files
 *.html
