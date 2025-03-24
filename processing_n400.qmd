@@ -44,6 +44,8 @@ library("lme4")
 ```{r}
 pipeline <- import("pipeline")
 n400_files <- pipeline$datasets$get_erpcore("N400")
+n400_files$"raw_files" <- n400_files$"raw_files"[c(1:29, 31:40)]
+n400_files$"log_files" <- n400_files$"log_files"[c(1:29, 31:40)]
 print(n400_files)
 ```
 
@@ -55,11 +57,10 @@ res <- pipeline$group_pipeline(
   # Input/output paths
   raw_files = n400_files$raw_files,
   log_files = n400_files$log_files,
-  output_dir = "output_erpcore",
+  output_dir = "output_n400",
 
   # Preprocessing options
   downsample_sfreq = 250.0,
-  bad_channels = 'auto',
   montage = 'biosemi64',
   ica_method = 'fastica',
 

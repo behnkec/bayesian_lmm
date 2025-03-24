@@ -1,0 +1,168 @@
+---
+title: "Bayes factor - N400"
+format: html
+editor: visual
+---
+
+## Load packages and data set
+
+```{r}
+library(brms)
+library(readr)
+library(bayesplot)
+library(ggplot2)
+library(dplyr)
+library(bridgesampling)
+library(scales)
+library(parallel)
+library(tictoc)
+
+options(mc.cores = 4)
+```
+
+```{r}
+trials_n400 <- read_csv("output_n400/trials.csv")
+```
+
+Add column for condition
+
+```{r}
+trials_cond <- trials_n400 |>
+  mutate(condition = ifelse(value <= 212, "related", "unrelated"))
+head(trials_cond)
+```
+
+## Priors
+
+### Correlation model
+
+```{r}
+prior_0cor <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                prior(normal(0, 10), class = b, coef = conditionunrelated), # grand beta
+                prior(normal(0, 50), class = sigma), # within person variation
+                prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                prior(normal(0, 20), class = sd, coef = conditionunrelated, group = participant_id), # between person variation in slope
+                prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+### Distributional model
+
+```{r}
+prior_0dis_2 <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                prior(normal(0, 10), class = b, coef = conditionunrelated), # grand beta
+                prior(normal(0, log(3)), class = Intercept, dpar = sigma),
+                prior(normal(0, 1), class = sd, group = participant_id, dpar = sigma), 
+                prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                prior(normal(0, 20), class = sd, coef = conditionunrelated, group = participant_id), # between person variation in slope
+                prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+## Fit model
+
+### Model with correlation
+
+Model 1
+
+```{r}
+mod_n400_cor_bf_1 <- brm(N400 ~ 1 + condition + (1 + condition | participant_id),
+                        data = trials_cond, 
+                        prior = prior_0cor,
+                        warmup = 2000,
+                        iter = 20000,
+                        control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                        save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                        family = gaussian())
+```
+
+
+```{r}
+summary(mod_n400_cor_bf_1)
+# mcmc_dens gives density plots of posterior distribution
+mcmc_dens(mod_n400_cor_bf_1, pars = variables(mod_n400_cor_bf_1)[1:6])
+```
+
+Model 0 (without fixed effect)
+
+```{r}
+mod_n400_cor_bf_0 <- brm(N400 ~ 1 + (1 + condition | participant_id),
+                            data = trials_cond, 
+                            prior = prior_0cor[prior_0cor$class != "b", ],
+                            warmup = 2000,
+                            iter = 20000,
+                            control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                            save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                            family = gaussian())
+```
+
+Model 1 ...
+
+Compute marginal log likelihood
+
+```{r}
+margLogLik_linear <- bridge_sampler(mod_n400_cor_bf_1, silent = TRUE)
+margLogLik_null <- bridge_sampler(mod_n400_cor_bf_0, silent = TRUE)
+```
+
+Compute Bayes Factor
+
+```{r}
+(BF_cor_n400 <- bayes_factor(margLogLik_linear, margLogLik_null))
+```
+
+Prior for b N(0,10) -\> Estimated Bayes factor in favor of x1 over x2: 5984.05981 Prior for b N(0,10) -\> Estimated Bayes factor in favor of x1 over x2: 6027.14818
+
+### Distributional model
+
+Model 1
+
+```{r}
+mod_n400_dis_bf_1 <- brm(brmsformula(N400 ~ 1 + condition + (1 + condition | participant_id), sigma ~ 1 + (1 | participant_id)),
+                            data = trials_cond, 
+                            prior = prior_0dis_2,
+                            warmup = 2000,
+                            iter = 20000,
+                            control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                            save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                            family = gaussian())
+```
+
+```{r}
+summary(mod_n400_dis_bf_1)
+# mcmc_dens gives density plots of posterior distribution
+mcmc_dens(mod_n400_dis_bf_1, pars = variables(mod_n400_dis_bf_1)[1:6])
+```
+
+Model 0 (without fixed effect)
+
+```{r}
+mod_n400_dis_bf_0 <- brm(brmsformula(N400 ~ 1 + condition + (1 + condition | participant_id), sigma ~ 1 + (1 | participant_id)),
+                            data = trials_cond, 
+                            prior = prior_0dis_2[prior_0dis$class != "b", ],
+                            warmup = 2000,
+                            iter = 20000,
+                            control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
+                            save_pars = save_pars(all = TRUE), # precondition for performing bridge sampling
+                            family = gaussian())
+```
+
+Compute marginal log likelihood
+
+```{r}
+margLogLik_linear_dis <- bridge_sampler(mod_n400_dis_bf_1, silent = TRUE)
+margLogLik_null_dis <- bridge_sampler(mod_n400_dis_bf_0, silent = TRUE)
+```
+
+Compute Bayes Factor
+
+```{r}
+(BF_dis_n400 <- bayes_factor(margLogLik_linear_dis, margLogLik_null_dis))
+```
+
+Prior for b N(0,10) -\> Estimated Bayes factor in favor of x1 over x2: 0.03699
+
+### Vergleich Correlation Model vs Distributional Regression
+
+```{r}
+(BF_cor <- bayes_factor(margLogLik_linear, margLogLik_linear_dis))
+```
+

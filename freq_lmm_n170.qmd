@@ -1,7 +1,7 @@
 ---
-title: "Frequentist Linear Mixed Model for the ERP CORE data set"
+title: "Frequentist Linear Mixed Model for the ERP CORE (N170) data set"
 format: html
-editor: visual
+editor: source
 ---
 
 ## Load packages and dataset

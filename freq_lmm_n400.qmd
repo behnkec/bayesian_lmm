@@ -1,0 +1,40 @@
+---
+title: "Frequentist LMM - N400"
+format: html
+editor: source
+---
+
+## Load packages and dataset
+
+```{r}
+library(Rmisc)
+library(dplyr)
+library(ggplot2)
+library(lme4)
+library(readr)
+library(papaja)
+```
+
+```{r}
+trials_n400 <- read_csv("output_n400/trials.csv")
+head(trials_n400)
+```
+
+Add column for condition
+
+```{r}
+trials_cond <- trials_n400 |>
+  mutate(condition = ifelse(value <= 212, "related", "unrelated"))
+head(trials_cond)
+```
+
+## Fitting LMM
+
+### Model with random intercept and random slope for participants (with lmerTest)
+
+```{r}
+mod_freq_ri_rs_n400 <- lmerTest::lmer(N400 ~ 1 + condition + (1 + condition | participant_id), trials_cond)
+summary(mod_freq_ri_rs_n400)
+apa_mod_freq_ri_rs_n400 <- apa_print(mod_freq_ri_rs_n400)
+apa_table(apa_mod_freq_ri_rs_n400$table, caption = "...")
+```

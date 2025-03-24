@@ -1,7 +1,7 @@
 ---
 title: "Distributional model for the ERP CORE data set"
 format: html
-editor: visual
+editor: source
 ---
 
 ```{r}
@@ -193,9 +193,9 @@ mod_erpcore_dis_bf_3 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_
 Model 0 (without fixed effect of faces vs. cars)
 
 ```{r}
-mod_erpcore_dis_bf_2 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
+mod_erpcore_dis_bf_3 <- brm(brmsformula(N170 ~ 1 + f_c + (1 + f_c | participant_id), sigma ~ 1 + (1 | participant_id)),
                             data = trials_cond, 
-                            prior = prior_0dis_2[prior_0dis$class != "b", ],
+                            prior = prior_0dis_3[prior_0dis$class != "b", ],
                             warmup = 2000,
                             iter = 20000,
                             control = list(adapt_delta = 0.9), # ensure that the posterior sampler is working correctly
@@ -208,7 +208,7 @@ Compute marginal log likelihood
 
 ```{r}
 margLogLik_linear_dis <- bridge_sampler(mod_erpcore_dis_bf_3, silent = TRUE)
-margLogLik_null_dis <- bridge_sampler(mod_erpcore_dis_bf_2, silent = TRUE)
+margLogLik_null_dis <- bridge_sampler(mod_erpcore_dis_bf_3, silent = TRUE)
 ```
 
 Compute Bayes Factor

@@ -256,7 +256,7 @@ pp_check(mod_erpcore_ri_rs_dis,
 ```
 
 ```{r}
-pp_check(mod_erpcore_ri_rs_cor,
+pp_check(mod_erpcore_ri_rs_dis,
          type = "stat_grouped",
          ndraws = 1000,
          group = "participant_id",

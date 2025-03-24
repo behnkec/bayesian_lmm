@@ -1,0 +1,263 @@
+---
+title: "BLMM - N400"
+format: html
+editor: source
+---
+
+## Load packages and data set
+
+```{r}
+library(brms)
+library(readr)
+library(bayesplot)
+library(ggplot2)
+library(dplyr)
+library(rstan)
+
+options(mc.cores = 4)
+```
+
+```{r}
+trials_n400 <- read_csv("output_n400/trials.csv")
+head(trials_n400)
+```
+
+Add column for condition
+
+```{r}
+trials_cond <- trials_n400 |>
+  mutate(condition = ifelse(value <= 212, "related", "unrelated"))
+head(trials_cond)
+```
+
+```{r}
+# Check for normality of single trial averages
+ggplot(trials_cond, aes(N400)) +
+  geom_histogram(aes(y = ..density..), fill='lightgray', col='darkgrey') +
+  stat_function(fun = dnorm, args = list(mean=mean(trials_cond$N170, na.rm = TRUE), sd=sd(trials_cond$N170, na.rm = TRUE)))
+```
+
+## Baysesian LMM with Priors
+
+### Model with correlation
+#### Prior
+
+```{r}
+prior_0cor <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                prior(normal(0, 10), class = b, coef = conditionunrelated), # grand beta
+                prior(normal(0, 50), class = sigma), # within person variation
+                prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                prior(normal(0, 20), class = sd, coef = conditionunrelated, group = participant_id), # between person variation in slope
+                prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+
+#### Model
+
+```{r}
+mod_n400_ri_rs_cor <- brm(N400 ~ 1 + condition + (1 + condition | participant_id),
+                           data = trials_cond, 
+                           prior = prior_0cor,
+                           family = gaussian()) # default
+```
+
+```{r}
+summary(mod_n400_ri_rs_cor)
+# mcmc_dens gives density plots of posterior distribution
+mcmc_dens(mod_n400_ri_rs_cor, pars = variables(mod_n400_ri_rs_cor)[1:6])
+
+stanfit <- mod_n400_ri_rs_cor$fit
+
+# Plot traceplot including the warm-up phase
+traceplot(stanfit, inc_warmup = TRUE, pars = variables(mod_n400_ri_rs_cor)[1:6])
+```
+
+## Distributional model
+
+#### Prior
+
+```{r}
+prior_0dis <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                prior(normal(0, 10), class = b, coef = conditionunrelated), # grand beta
+                prior(normal(0, log(50)), class = Intercept, dpar = sigma),
+                prior(normal(0, 5), class = sd, group = participant_id, dpar = sigma), 
+                prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                prior(normal(0, 20), class = sd, coef = conditionunrelated, group = participant_id), # between person variation in slope
+                prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+
+#### Model
+
+```{r}
+mod_n400_ri_rs_dis <- brm(brmsformula(N400 ~ 1 + condition + (1 + condition | participant_id), sigma ~ 1 + (1 | participant_id)),
+                             data = trials_cond, 
+                             prior = prior_0dis,
+                             family = gaussian()) 
+```
+
+```{r}
+summary(mod_n400_ri_rs_dis)
+# mcmc_dens gives density plots of posterior distribution
+mcmc_dens(mod_n400_ri_rs_dis, pars = variables(mod_n400_ri_rs_dis)[1:7])
+```
+
+
+## Prior predictive Checks
+
+### Correlation Model
+
+```{r}
+mod_n400_prior_cor <- brm(N400 ~ 1 + condition + (1 + condition | participant_id),
+                          data = trials_cond, 
+                          prior = prior_0cor,
+                          family = gaussian(),
+                          sample_prior = "only")
+```
+
+```{r}
+summary(mod_n400_prior_cor)
+plot(mod_n400_prior_cor)
+```
+
+```{r}
+pp_check(mod_n400_prior_cor, ndraws = 11, type = "hist")
+pp_check(mod_n400_prior_cor, ndraws = 100, type = "stat", stat = "mean")
+pp_check(mod_n400_prior_cor, ndraws = 100, type = "stat", stat = "min")
+pp_check(mod_n400_prior_cor, ndraws = 100, type = "stat", stat = "max")
+```
+
+### Distribuitonal Model
+
+```{r}
+mod_n400_prior_dis <- brm(brmsformula(N400 ~ 1 + condition + (1 + condition | participant_id), sigma ~ 1 + (1 | participant_id)),
+                          data = trials_cond, 
+                          prior = prior_0dis,
+                          family = gaussian(),
+                          sample_prior = "only")
+```
+
+```{r}
+summary(mod_n400_prior_dis)
+plot(mod_n400_prior_dis)
+```
+
+```{r}
+pp_check(mod_n400_prior_dis, ndraws = 11, type = "hist")
+pp_check(mod_n400_prior_dis, ndraws = 100, type = "stat", stat = "mean")
+pp_check(mod_n400_prior_dis, ndraws = 100, type = "stat", stat = "min")
+pp_check(mod_n400_prior_dis, ndraws = 100, type = "stat", stat = "max")
+```
+
+#### New Prior for distributional model
+
+```{r}
+prior_0dis_2 <- c(prior(normal(0, 10), class = Intercept), # grand mean
+                prior(normal(0, 10), class = b, coef = conditionunrelated), # grand beta
+                prior(normal(0, log(3)), class = Intercept, dpar = sigma),
+                prior(normal(0, 1), class = sd, group = participant_id, dpar = sigma), 
+                prior(normal(0, 20), class = sd, coef = Intercept, group = participant_id), # between person variation in mean 
+                prior(normal(0, 20), class = sd, coef = conditionunrelated, group = participant_id), # between person variation in slope
+                prior(lkj(2), class = cor, group = participant_id)) # correlation between random intercept and random slope
+```
+
+```{r}
+mod_n400_prior_dis_2 <- brm(brmsformula(N400 ~ 1 + condition + (1 + condition | participant_id), sigma ~ 1 + (1 | participant_id)),
+                          data = trials_cond, 
+                          prior = prior_0dis_2,
+                          family = gaussian(),
+                          sample_prior = "only")
+```
+
+```{r}
+summary(mod_n400_prior_dis_2)
+plot(mod_n400_prior_dis_2)
+```
+
+```{r}
+pp_check(mod_n400_prior_dis_2, ndraws = 11, type = "hist")
+pp_check(mod_n400_prior_dis_2, ndraws = 100, type = "stat", stat = "mean")
+pp_check(mod_n400_prior_dis_2, ndraws = 100, type = "stat", stat = "min")
+pp_check(mod_n400_prior_dis_2, ndraws = 100, type = "stat", stat = "max")
+```
+
+## Posterior predictive check
+
+#### Model 1
+
+```{r}
+pp_check(mod_n400_ri_rs_cor, ndraws = 11, type = "hist")
+pp_check(mod_n400_ri_rs_cor, ndraws = 100, type = "dens_overlay")
+```
+
+```{r}
+pp_check(mod_n400_ri_rs_cor,
+          type = "dens_overlay_grouped",
+          ndraws = 100,
+          group = "participant_id")
+```
+
+```{r}
+pp_check(mod_n400_ri_rs_cor,
+         type = "stat_grouped",
+         ndraws = 1000,
+         group = "participant_id",
+         stat = "sd",
+         facet_args = list(scales = "fixed"))
+```
+
+#### Distr Regression Model
+
+```{r}
+pp_check(mod_n400_ri_rs_dis, ndraws = 11, type = "hist")
+pp_check(mod_n400_ri_rs_dis, ndraws = 100, type = "dens_overlay")
+```
+
+
+```{r}
+pp_check(mod_n400_ri_rs_dis,
+          type = "dens_overlay_grouped",
+          ndraws = 100,
+          group = "participant_id")
+```
+
+```{r}
+pp_check(mod_n400_ri_rs_dis,
+         type = "stat_grouped",
+         ndraws = 1000,
+         group = "participant_id",
+         stat = "sd",
+         facet_args = list(scales = "fixed"))
+```
+
+New prior
+
+```{r}
+mod_n400_ri_rs_dis_2 <- brm(brmsformula(N400 ~ 1 + condition + (1 + condition | participant_id), sigma ~ 1 + (1 | participant_id)),
+                             data = trials_cond, 
+                             prior = prior_0dis_2,
+                             family = gaussian()) 
+```
+
+
+```{r}
+pp_check(mod_n400_ri_rs_dis_2, ndraws = 11, type = "hist")
+pp_check(mod_n400_ri_rs_dis_2, ndraws = 100, type = "dens_overlay")
+```
+
+
+```{r}
+pp_check(mod_n400_ri_rs_dis_2,
+          type = "dens_overlay_grouped",
+          ndraws = 100,
+          group = "participant_id")
+```
+
+```{r}
+pp_check(mod_n400_ri_rs_dis_2,
+         type = "stat_grouped",
+         ndraws = 1000,
+         group = "participant_id",
+         stat = "sd",
+         facet_args = list(scales = "fixed"))
+```

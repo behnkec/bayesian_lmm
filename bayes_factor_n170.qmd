@@ -1,5 +1,5 @@
 ---
-title: "Hypothesis testing (erpcore) with bridge sampling"
+title: "Hypothesis testing (N170) with bridge sampling"
 format: html
 editor: visual
 ---
@@ -171,7 +171,7 @@ Compute Bayes Factor
 
 Prior for b N(0,10) -\> Estimated Bayes factor in favor of x1 over x2: 0.03914
 
-## Sensitivity Analysis for correlation model
+## Sensitivity Analysis for standard model
 
 Null Model
 
